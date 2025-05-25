@@ -3,6 +3,8 @@ package dev.crafty.core.plugin;
 import co.aikar.commands.PaperCommandManager;
 import com.vdurmont.semver4j.Semver;
 import dev.crafty.core.CraftyCore;
+import dev.crafty.core.bridge.BridgeAutoRegistrar;
+import dev.crafty.core.bridge.BridgeManager;
 import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.bukkit.EnhancedBaseCommand;
 import dev.crafty.core.bukkit.SelfRegisteringListener;
@@ -108,6 +110,11 @@ public abstract class CraftyPlugin extends JavaPlugin {
         // Scheduler
         logger.info("Setting up scheduler...");
         setupScheduler();
+
+        // Bridge
+        BridgeAutoRegistrar registrar = new BridgeAutoRegistrar(this);
+        registrar.registerAll();
+        logger.info("Bridges registered.");
 
         logger.info("Plugin enabled successfully.");
         try {
