@@ -3,8 +3,6 @@ name: Publish to repo
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   maven-deploy:
