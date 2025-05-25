@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * @since 1.0.4
+ */
 public class PlaceholderApiBridge implements PlaceholderBridge {
 
     @Override
