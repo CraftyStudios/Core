@@ -1,5 +1,6 @@
 package dev.crafty.core.bridge.placeholders.placeholderapi;
 
+import dev.crafty.core.CraftyCore;
 import dev.crafty.core.bridge.placeholders.PlaceholderBridge;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -7,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * @since 1.0.4
@@ -29,7 +29,7 @@ public class PlaceholderApiBridge implements PlaceholderBridge {
 
             @Override
             public @NotNull String getVersion() {
-                return "1.0.0";
+                return CraftyCore.INSTANCE.getPluginMeta().getVersion();
             }
 
             @Override
