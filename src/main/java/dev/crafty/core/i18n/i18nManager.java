@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-
 /**
  * Manages the translations for a plugin
  * @since 1.0.2
@@ -54,6 +52,14 @@ public class i18nManager {
             return this;
         }
 
+        /**
+         * Adds a placeholder to the localization query. Placeholders are used to dynamically
+         * replace keys in the localized string with corresponding values.
+         *
+         * @param key   the placeholder key to be replaced in the localized string
+         * @param value the value to replace the placeholder key with
+         * @return the current {@link LocalizationQuery} instance for method chaining
+         */
         public LocalizationQuery placeholder(String key, String value) {
             this.placeholders.put(key, value);
             return this;
