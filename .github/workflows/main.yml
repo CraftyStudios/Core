@@ -27,7 +27,7 @@ jobs:
         echo "<settings>
           <servers>
             <server>
-              <id>private-repo</id>
+              <id>lightmc-repository-releases</id>
               <username>${{ secrets.MAVEN_USERNAME }}</username>
               <password>${{ secrets.MAVEN_PASSWORD }}</password>
             </server>
