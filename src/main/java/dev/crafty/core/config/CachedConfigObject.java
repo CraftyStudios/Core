@@ -59,6 +59,13 @@ public abstract class CachedConfigObject<K, V> {
     protected abstract K keyFromString(String key);
 
     /**
+     * Converts a key of type K to a String for config storage.
+     *
+     * @param key the key of type K
+     */
+    protected abstract String keyToString(K key);
+
+    /**
      * Gets a value from the cache, loading from config if not present.
      *
      * @param key the key to look up
@@ -185,12 +192,12 @@ public abstract class CachedConfigObject<K, V> {
 
         SectionWrapper section = new SectionWrapper(regionsSection);
 
-        if (!regionsSection.contains(String.valueOf(id))) {
+        if (!regionsSection.contains(keyToString(id))) {
             return Optional.empty();
         }
 
         if (getSerializer().isPresent()) {
-            return getSerializer().get().deserialize(section, getConfigSection() + "." + id);
+            return getSerializer().get().deserialize(section, getConfigSection() + "." + keyToString(id));
         }
 
         return Optional.empty();
@@ -207,6 +214,7 @@ public abstract class CachedConfigObject<K, V> {
         private Optional<ConfigSerializer<V>> serializer = Optional.empty();
         private String configSection = "";
         private Function<String, K> keyFromStringFunction;
+        private Function<K, String> keyToStringFunction;
 
         /**
          * Sets the config file to use.
@@ -253,6 +261,17 @@ public abstract class CachedConfigObject<K, V> {
         }
 
         /**
+         * Sets the function to convert keys of type K to string keys.
+         *
+         * @param keyToStringFunction the function to convert K to string
+         * @return this builder
+         */
+        public Builder<K, V> keyToStringFunction(Function<K, String> keyToStringFunction) {
+            this.keyToStringFunction = keyToStringFunction;
+            return this;
+        }
+
+        /**
          * Builds a new {@link CachedConfigObject} instance with the configured parameters.
          *
          * @return a new CachedConfigObject instance
@@ -262,6 +281,7 @@ public abstract class CachedConfigObject<K, V> {
             final Optional<ConfigSerializer<V>> ser = this.serializer;
             final String section = this.configSection;
             final Function<String, K> keyFromString = this.keyFromStringFunction;
+            final Function<K, String> keyToString = this.keyToStringFunction;
 
             return new CachedConfigObject<>() {
                 @Override
@@ -282,6 +302,11 @@ public abstract class CachedConfigObject<K, V> {
                 @Override
                 protected K keyFromString(String key) {
                     return keyFromString.apply(key);
+                }
+
+                @Override
+                protected String keyToString(K key) {
+                    return keyToString.apply(key);
                 }
             };
         }
