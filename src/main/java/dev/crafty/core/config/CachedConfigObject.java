@@ -137,11 +137,16 @@ public abstract class CachedConfigObject<K, V> {
             }
 
             if (getSerializer().isPresent()) {
-                getSerializer().get().serialize(
+                ConfigSerializer.SerializationArgs<V> args = new ConfigSerializer.SerializationArgs<>(
                         value,
                         new SectionWrapper(section),
-                        getConfigSection() + "." + keyToString(key)
+                        new YamlConfigurationWrapper(config),
+                        getConfigSection() + "." + keyToString(key),
+                        fileOpt.get(),
+                        true
                 );
+
+                getSerializer().get().serialize(args);
             }
 
             try {
