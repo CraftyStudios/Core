@@ -6,6 +6,8 @@ import dev.crafty.core.util.Configs;
 import dev.crafty.core.util.Lang;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -31,7 +33,7 @@ public class i18nManager {
         private Optional<Player> player = Optional.empty();
         private boolean replacePlaceholders = true;
         private Optional<String> fallbackString = Optional.empty();
-        private Function<String, String> replacer = null;
+        private final Map<String, String> placeholders = new HashMap<>();
 
         LocalizationQuery(i18nEnum key) {
             this.key = key;
@@ -52,8 +54,8 @@ public class i18nManager {
             return this;
         }
 
-        public LocalizationQuery replace(Function<String, String> replacer) {
-            this.replacer = replacer;
+        public LocalizationQuery placeholder(String key, String value) {
+            this.placeholders.put(key, value);
             return this;
         }
 
@@ -77,24 +79,25 @@ public class i18nManager {
                     } else {
                         processed = Lang.colorize(string);
                     }
-                    if (replacer != null) {
-                        processed = replacer.apply(processed);
-                    }
-                    value.set(processed);
+                    replacePlaceholders(value, processed);
                 });
             } else {
                 String processed = fallbackString.map(Lang::colorize).orElse("key is null!");
-                if (replacer != null) {
-                    processed = replacer.apply(processed);
-                }
-                value.set(processed);
+                replacePlaceholders(value, processed);
             }
 
             return value.get();
         }
 
+        private void replacePlaceholders(AtomicReference<String> value, String processed) {
+            for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+                processed = processed.replace("{" + entry.getKey() + "}", entry.getValue());
+            }
+            value.set(processed);
+        }
+
         public void send() {
-            player.ifPresent((p) -> p.sendMessage(get()) );
+            player.ifPresent((p) -> p.sendMessage(get()));
         }
     }
 }
