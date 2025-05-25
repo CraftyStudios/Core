@@ -29,12 +29,7 @@ public final class CraftyCore extends JavaPlugin {
 
     private final Map<String, List<Object>> registeredConfigs = new HashMap<>();
     private ConfigWatcher configWatcher;
-    /**
-     * -- GETTER --
-     *  Check if the configuration watcher is enabled.
-     *
-     * @return True if the watcher is enabled, false otherwise
-     */
+
     @Getter
     private boolean configWatcherEnabled = true;
 
