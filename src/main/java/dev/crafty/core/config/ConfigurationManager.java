@@ -4,8 +4,6 @@ import dev.crafty.core.config.annotation.ConfigurationFile;
 import dev.crafty.core.config.annotation.ConfigValue;
 import dev.crafty.core.config.serializer.ConfigSerializer;
 import dev.crafty.core.config.serializer.SerializerRegistry;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -31,7 +29,7 @@ import java.util.logging.Level;
 public class ConfigurationManager {
 
     private final Plugin plugin;
-    private final Map<Class<?>, SectionWrapper> configCache = new HashMap<>();
+    private final Map<Class<?>, YamlConfiguration> configCache = new HashMap<>();
     private final Map<Class<?>, File> configFiles = new HashMap<>();
     private final Map<Class<?>, Plugin> configPlugins = new HashMap<>();
 
@@ -51,7 +49,7 @@ public class ConfigurationManager {
      * @return The loaded configuration
      * @throws IllegalArgumentException If the class is not annotated with @ConfigurationFile
      */
-    public SectionWrapper loadConfig(Class<?> clazz) {
+    public YamlConfiguration loadConfig(Class<?> clazz) {
         return loadConfig(clazz, plugin);
     }
 
@@ -63,7 +61,7 @@ public class ConfigurationManager {
      * @return The loaded configuration
      * @throws IllegalArgumentException If the class is not annotated with @ConfigurationFile
      */
-    public SectionWrapper loadConfig(Class<?> clazz, Plugin plugin) {
+    public YamlConfiguration loadConfig(Class<?> clazz, Plugin plugin) {
         ConfigurationFile annotation = clazz.getAnnotation(ConfigurationFile.class);
         if (annotation == null) {
             throw new IllegalArgumentException("Class " + clazz.getName() + " is not annotated with @ConfigurationFile");
@@ -84,7 +82,7 @@ public class ConfigurationManager {
             plugin.saveResource(filePath, false);
         }
 
-        SectionWrapper config = new SectionWrapper(YamlConfiguration.loadConfiguration(configFile));
+        var config = YamlConfiguration.loadConfiguration(configFile);
         configCache.put(clazz, config);
 
         return config;
@@ -97,7 +95,7 @@ public class ConfigurationManager {
      * @return The reloaded configuration
      * @throws IllegalArgumentException If the class is not annotated with @ConfigurationFile
      */
-    public SectionWrapper reloadConfig(Class<?> clazz) {
+    public YamlConfiguration reloadConfig(Class<?> clazz) {
         ConfigurationFile annotation = clazz.getAnnotation(ConfigurationFile.class);
         if (annotation == null) {
             throw new IllegalArgumentException("Class " + clazz.getName() + " is not annotated with @ConfigurationFile");
@@ -110,8 +108,7 @@ public class ConfigurationManager {
             return loadConfig(clazz, pluginForClass);
         }
 
-        SectionWrapper config = new SectionWrapper(YamlConfiguration.loadConfiguration(configFile));
-
+        var config = YamlConfiguration.loadConfiguration(configFile);
         configCache.put(clazz, config);
 
         return config;
@@ -131,9 +128,15 @@ public class ConfigurationManager {
             throw new IllegalArgumentException("Class " + clazz.getName() + " is not annotated with @ConfigurationFile");
         }
 
-        SectionWrapper config = loadConfig(clazz, plugin);
+        YamlConfiguration configFile = loadConfig(clazz, plugin);
 
-        populateFieldsWithAnnotation(object, plugin, clazz, config);
+        populateFieldsWithAnnotation(object, plugin, clazz, new SectionWrapper(configFile));
+
+        try {
+            configFile.save(configFiles.get(clazz));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -166,9 +169,16 @@ public class ConfigurationManager {
             configPlugins.put(clazz, plugin);
         }
 
-        SectionWrapper config = reloadConfig(clazz);
+        YamlConfiguration configFile = reloadConfig(clazz);
+        var config = new SectionWrapper(configFile);
 
         populateFieldsWithAnnotation(object, plugin, clazz, config);
+
+        try {
+            configFile.save(configFiles.get(clazz));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         plugin.getLogger().info("Reloaded configuration for " + clazz.getSimpleName());
     }

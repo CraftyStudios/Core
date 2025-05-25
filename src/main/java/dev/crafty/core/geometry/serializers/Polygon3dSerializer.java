@@ -5,6 +5,7 @@ import dev.crafty.core.config.serializer.ConfigSerializer;
 import dev.crafty.core.geometry.Point2d;
 import dev.crafty.core.geometry.polygons.Polygon3d;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ import java.util.Optional;
  */
 public class Polygon3dSerializer implements ConfigSerializer<Polygon3d> {
     @Override
-    public void serialize(Polygon3d value, SectionWrapper section, String path) {
+    public void serialize(Polygon3d value, SectionWrapper section, String path, File configFile) {
         List<Point2d> points = value.getVertices();
         double minY = value.getMinY();
         double maxY = value.getMaxY();
@@ -25,8 +26,10 @@ public class Polygon3dSerializer implements ConfigSerializer<Polygon3d> {
 
         for (int i = 1; i <= points.size(); i++) {
             Point2d point = points.get(i - 1);
-            getSerializer(Point2d.class).serialize(point, verticesSection, i + "");
+            getSerializer(Point2d.class).serialize(point, verticesSection, i + "", configFile);
         }
+
+        save(configFile);
     }
 
     @Override

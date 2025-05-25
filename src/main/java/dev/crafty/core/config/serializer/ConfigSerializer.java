@@ -1,7 +1,10 @@
 package dev.crafty.core.config.serializer;
 
 import dev.crafty.core.config.SectionWrapper;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -21,7 +24,7 @@ public interface ConfigSerializer<T> {
      * @param section The configuration section to serialize to
      * @param path The path within the section to serialize to
      */
-    void serialize(T value, SectionWrapper section, String path);
+    void serialize(T value, SectionWrapper section, String path, File configFile);
 
     /**
      * Deserialize an object from a configuration section.
@@ -41,5 +44,15 @@ public interface ConfigSerializer<T> {
 
     default <S> ConfigSerializer<S> getSerializer(Class<S> type) {
         return SerializerRegistry.getSerializer(type).orElseThrow(() -> new IllegalArgumentException("No serializer found for type " + type.getName()));
+    }
+
+    default void save(File configFile) {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

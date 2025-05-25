@@ -5,6 +5,7 @@ import dev.crafty.core.config.serializer.ConfigSerializer;
 import dev.crafty.core.geometry.Point2d;
 import dev.crafty.core.util.Optionals;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -13,9 +14,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class Point2dSerializer implements ConfigSerializer<Point2d> {
     @Override
-    public void serialize(Point2d value, SectionWrapper section, String path) {
+    public void serialize(Point2d value, SectionWrapper section, String path, File configFile) {
         section.set(path + ".x", value.x());
         section.set(path + ".z", value.z());
+
+        save(configFile);
     }
 
     @Override
