@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 /**
  * Manages the translations for a plugin
@@ -30,6 +31,7 @@ public class i18nManager {
         private Optional<Player> player = Optional.empty();
         private boolean replacePlaceholders = true;
         private Optional<String> fallbackString = Optional.empty();
+        private Function<String, String> replacer = null;
 
         LocalizationQuery(i18nEnum key) {
             this.key = key;
@@ -50,6 +52,11 @@ public class i18nManager {
             return this;
         }
 
+        public LocalizationQuery replace(Function<String, String> replacer) {
+            this.replacer = replacer;
+            return this;
+        }
+
         public String get() {
             AtomicReference<String> value = new AtomicReference<>();
 
@@ -59,31 +66,28 @@ public class i18nManager {
                 String configKey = this.key.getTranslationKey();
 
                 langConfig.getString(configKey).ifPresent(string -> {
+                    String processed;
                     if (replacePlaceholders) {
                         if (player.isPresent()) {
                             Player found = player.get();
-                            value.set(
-                                    Lang.colorize(
-                                        Lang.replacePlaceholders(string, found)
-                                    )
-                            );
+                            processed = Lang.colorize(Lang.replacePlaceholders(string, found));
                         } else {
-                            value.set(
-                                    Lang.colorize(
-                                        Lang.replacePlaceholders(string, null)
-                                    )
-                            );
+                            processed = Lang.colorize(Lang.replacePlaceholders(string, null));
                         }
                     } else {
-                        value.set(Lang.colorize(string));
+                        processed = Lang.colorize(string);
                     }
+                    if (replacer != null) {
+                        processed = replacer.apply(processed);
+                    }
+                    value.set(processed);
                 });
             } else {
-                if (fallbackString.isPresent()) {
-                    value.set(Lang.colorize(fallbackString.get()));
-                } else {
-                    value.set("key is null!");
+                String processed = fallbackString.map(Lang::colorize).orElse("key is null!");
+                if (replacer != null) {
+                    processed = replacer.apply(processed);
                 }
+                value.set(processed);
             }
 
             return value.get();
