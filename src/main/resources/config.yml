@@ -1,0 +1,28 @@
+storage:
+  # Change this to: YAML, MYSQL, POSTGRES, or MONGODB
+  type: YAML
+
+  # YAML storage config
+  yaml:
+    data-folder: data
+
+  # MySQL storage config
+  mysql:
+    host: localhost
+    port: 3306
+    database: mydatabase
+    username: myuser
+    password: secret
+
+  # PostgreSQL storage config
+  postgres:
+    host: localhost
+    port: 5432
+    database: mydatabase
+    username: myuser
+    password: secret
+
+  # MongoDB storage config
+  mongodb:
+    connection-string: ...
+
