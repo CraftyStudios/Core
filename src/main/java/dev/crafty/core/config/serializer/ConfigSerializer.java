@@ -1,6 +1,7 @@
 package dev.crafty.core.config.serializer;
 
 import dev.crafty.core.config.SectionWrapper;
+import dev.crafty.core.config.YamlConfigurationWrapper;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -46,20 +47,24 @@ public interface ConfigSerializer<T> {
 
     default void save(SerializationArgs<T> args) {
         if (!args.save) return;
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(args.configFile);
+        var yamlConfig = args.parent().getYamlConfiguration();
 
         try {
-            config.save(args.configFile);
+            yamlConfig.save(args.configFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     record SerializationArgs<T>(
-            T value, SectionWrapper section, String path, File configFile, boolean save
+            T value, SectionWrapper section, YamlConfigurationWrapper parent, String path, File configFile, boolean save
     ) {
-        public SerializationArgs(T value, SectionWrapper section, String path, File configFile) {
-            this(value, section, path, configFile, true);
+        public SerializationArgs(T value, SectionWrapper section, YamlConfigurationWrapper parent, String path, File configFile) {
+            this(value, section, parent, path, configFile, true);
+        }
+
+        public SerializationArgs(T value, YamlConfigurationWrapper parent, String path, File configFile) {
+            this(value, parent, parent, path, configFile, true);
         }
     }
 }

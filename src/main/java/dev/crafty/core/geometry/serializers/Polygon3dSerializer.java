@@ -29,7 +29,7 @@ public class Polygon3dSerializer implements ConfigSerializer<Polygon3d> {
 
         for (int i = 1; i <= points.size(); i++) {
             Point2d point = points.get(i - 1);
-            SerializationArgs<Point2d> pointArgs = new SerializationArgs<>(point, verticesSection, i + "", args.configFile(), false);
+            SerializationArgs<Point2d> pointArgs = new SerializationArgs<>(point, verticesSection, args.parent(), i + "", args.configFile(), false);
             getSerializer(Point2d.class).serialize(pointArgs);
         }
 
