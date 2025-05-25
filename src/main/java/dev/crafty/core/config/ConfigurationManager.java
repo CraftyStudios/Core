@@ -132,11 +132,7 @@ public class ConfigurationManager {
 
         populateFieldsWithAnnotation(object, plugin, clazz, new SectionWrapper(configFile));
 
-        try {
-            configFile.save(configFiles.get(clazz));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        saveConfigFile(configFile, clazz);
     }
 
     /**
@@ -174,11 +170,7 @@ public class ConfigurationManager {
 
         populateFieldsWithAnnotation(object, plugin, clazz, config);
 
-        try {
-            configFile.save(configFiles.get(clazz));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        saveConfigFile(configFile, clazz);
 
         plugin.getLogger().info("Reloaded configuration for " + clazz.getSimpleName());
     }
@@ -355,6 +347,14 @@ public class ConfigurationManager {
                     throw new IllegalArgumentException("Cannot set field of type " + fieldType.getName() + " from string value", e);
                 }
             }
+        }
+    }
+
+    private void saveConfigFile(YamlConfiguration configFile, Class<?> clazz) {
+        try {
+            configFile.save(configFiles.get(clazz));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
