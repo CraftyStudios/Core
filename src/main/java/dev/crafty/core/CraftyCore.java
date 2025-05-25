@@ -1,18 +1,16 @@
 package dev.crafty.core;
 
+import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.config.ConfigurationUtils;
 import dev.crafty.core.config.ConfigWatcher;
 import dev.crafty.core.config.SectionWrapper;
-import dev.crafty.core.i18n.i18nManager;
 import dev.crafty.core.storage.ProviderManager;
-import dev.crafty.core.storage.StorageProvider;
 import dev.crafty.core.storage.StorageProviderFactory;
+import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -27,10 +25,15 @@ public final class CraftyCore extends JavaPlugin {
 
     private final Map<String, List<Object>> registeredConfigs = new HashMap<>();
     private ConfigWatcher configWatcher;
+
+    @Getter
     private boolean configWatcherEnabled = true;
+
+    public CraftyLogger logger;
 
     @Override
     public void onEnable() {
+        logger = new CraftyLogger(this);
         INSTANCE = this;
 
         // Save default config
@@ -45,7 +48,7 @@ public final class CraftyCore extends JavaPlugin {
             setupConfigWatcher();
         }
 
-        getLogger().info("CraftyCore has been enabled!");
+        logger.info("CraftyCore has been enabled!");
     }
 
     @Override
@@ -81,8 +84,8 @@ public final class CraftyCore extends JavaPlugin {
         // Then reload all registered configurations
         int reloadedCount = ConfigurationUtils.reloadAllConfigs(plugin);
 
-        getLogger().info("Scanned and found " + scannedCount + " configuration classes for " + plugin.getName());
-        getLogger().info("Reloaded " + reloadedCount + " configurations for " + plugin.getName());
+        logger.info("Scanned and found " + scannedCount + " configuration classes for " + plugin.getName());
+        logger.info("Reloaded " + reloadedCount + " configurations for " + plugin.getName());
 
         return reloadedCount;
     }
@@ -94,7 +97,7 @@ public final class CraftyCore extends JavaPlugin {
             configWatcher.stop();
         }
 
-        getLogger().info("CraftyCore has been disabled!");
+        logger.info("CraftyCore has been disabled!");
     }
 
     /**
@@ -115,22 +118,13 @@ public final class CraftyCore extends JavaPlugin {
     }
 
     /**
-     * Check if the configuration watcher is enabled.
-     * 
-     * @return True if the watcher is enabled, false otherwise
-     */
-    public boolean isConfigWatcherEnabled() {
-        return configWatcherEnabled;
-    }
-
-    /**
      * Set up a file watcher to monitor changes to the config.yml file
      * and automatically reload the configuration when changes are detected.
      */
     private void setupConfigWatcher() {
         // Create a config watcher for the plugin's config.yml file
         configWatcher = ConfigWatcher.forPluginConfig(this, () -> {
-            getLogger().info("Detected changes to config.yml, reloading configuration...");
+            logger.info("Detected changes to config.yml, reloading configuration...");
             reloadConfig();
             onConfigReloaded();
         });
@@ -147,7 +141,7 @@ public final class CraftyCore extends JavaPlugin {
     public void onConfigReloaded() {
         // Reload all registered configurations
         scanAndReloadConfigs(this);
-        getLogger().info("CraftyCore configuration reloaded");
+        logger.info("CraftyCore configuration reloaded");
     }
 
     /**
@@ -162,7 +156,7 @@ public final class CraftyCore extends JavaPlugin {
             registeredConfigs.put(pluginName, new ArrayList<>());
         }
         registeredConfigs.get(pluginName).add(configObject);
-        getLogger().info("Registered configuration for " + plugin.getName());
+        logger.info("Registered configuration for " + plugin.getName());
     }
 
     /**
@@ -187,7 +181,7 @@ public final class CraftyCore extends JavaPlugin {
         Plugin targetPlugin = Bukkit.getPluginManager().getPlugin(pluginName);
 
         if (targetPlugin == null) {
-            getLogger().warning("Could not find plugin: " + pluginName);
+            logger.warn("Could not find plugin: " + pluginName);
             return false;
         }
 
@@ -212,7 +206,7 @@ public final class CraftyCore extends JavaPlugin {
             }
         }
 
-        getLogger().info("Reloaded " + totalCount + " configurations for all plugins");
+        logger.info("Reloaded " + totalCount + " configurations for all plugins");
     }
 
     /**
