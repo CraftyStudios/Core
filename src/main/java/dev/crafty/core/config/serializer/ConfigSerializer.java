@@ -20,11 +20,9 @@ public interface ConfigSerializer<T> {
     /**
      * Serialize an object to a configuration section.
      *
-     * @param value The object to serialize
-     * @param section The configuration section to serialize to
-     * @param path The path within the section to serialize to
+     * @param args The serialization arguments
      */
-    void serialize(T value, SectionWrapper section, String path, File configFile);
+    void serialize(SerializationArgs<T> args);
 
     /**
      * Deserialize an object from a configuration section.
@@ -46,13 +44,22 @@ public interface ConfigSerializer<T> {
         return SerializerRegistry.getSerializer(type).orElseThrow(() -> new IllegalArgumentException("No serializer found for type " + type.getName()));
     }
 
-    default void save(File configFile) {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+    default void save(SerializationArgs<T> args) {
+        if (!args.save) return;
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(args.configFile);
 
         try {
-            config.save(configFile);
+            config.save(args.configFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    record SerializationArgs<T>(
+            T value, SectionWrapper section, String path, File configFile, boolean save
+    ) {
+        public SerializationArgs(T value, SectionWrapper section, String path, File configFile) {
+            this(value, section, path, configFile, true);
         }
     }
 }

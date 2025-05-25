@@ -19,8 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
 
     @Override
-    public void serialize(ItemStack value, SectionWrapper section, String path, File configFile) {
-        // todo
+    public void serialize(SerializationArgs<ItemStack> args) {
+        var value = args.value();
+        var section = args.section();
+        var path = args.path();
+
         if (value == null) {
             section.set(path, null);
             return;
@@ -28,7 +31,7 @@ public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
         
         section.set(path, value);
 
-        save(configFile);
+        save(args);
     }
 
     @Override

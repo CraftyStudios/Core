@@ -31,10 +31,14 @@ public class SerializerFactory {
         
         return new ConfigSerializer<>() {
             @Override
-            public void serialize(T value, SectionWrapper section, String path, File configFile) {
+            public void serialize(SerializationArgs<T> args) {
+                var section = args.section();
+                var path = args.path();
+                var value = args.value();
+                
                 section.set(path, value);
 
-                save(configFile);
+                save(args);
             }
 
             @Override
@@ -69,10 +73,14 @@ public class SerializerFactory {
         
         return new ConfigSerializer<>() {
             @Override
-            public void serialize(List<T> value, SectionWrapper section, String path, File configFile) {
+            public void serialize(SerializationArgs<List<T>> args) {
+                var section = args.section();
+                var path = args.path();
+                var value = args.value();
+                
                 section.set(path, value);
 
-                save(configFile);
+                save(args);
             }
 
             @Override

@@ -22,11 +22,15 @@ public class Point2dSerializer implements ConfigSerializer<Point2d> {
      * @param configFile The configuration file to save changes to.
      */
     @Override
-    public void serialize(Point2d value, SectionWrapper section, String path, File configFile) {
+    public void serialize(SerializationArgs<Point2d> args) {
+        var section = args.section();
+        var path = args.path();
+        var value = args.value();
+
         section.set(path + ".x", value.x());
         section.set(path + ".z", value.z());
 
-        save(configFile);
+        save(args);
     }
 
     @Override
