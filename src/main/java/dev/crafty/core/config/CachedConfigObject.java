@@ -113,6 +113,8 @@ public abstract class CachedConfigObject<K, V> {
         saveToConfig(key, value);
     }
 
+    private final Object configFileLock = new Object();
+
     /**
      * Saves a value to the config file.
      *
@@ -120,27 +122,33 @@ public abstract class CachedConfigObject<K, V> {
      * @param value the value to save
      */
     private void saveToConfig(K key, V value) {
-        Optional<File> fileOpt = ensureFileExists();
-        if (fileOpt.isEmpty()) {
-            return;
-        }
+        synchronized (configFileLock) {
+            Optional<File> fileOpt = ensureFileExists();
+            if (fileOpt.isEmpty()) {
+                return;
+            }
 
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(fileOpt.get());
-        ConfigurationSection section = config.getConfigurationSection(getConfigSection());
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(fileOpt.get());
+            ConfigurationSection section = config.getConfigurationSection(getConfigSection());
 
-        if (section == null) {
-            config.createSection(getConfigSection());
-            section = config.getConfigurationSection(getConfigSection());
-        }
+            if (section == null) {
+                config.createSection(getConfigSection());
+                section = config.getConfigurationSection(getConfigSection());
+            }
 
-        if (getSerializer().isPresent()) {
-            getSerializer().get().serialize(value, new SectionWrapper(section), getConfigSection() + "." + key);
-        }
+            if (getSerializer().isPresent()) {
+                getSerializer().get().serialize(
+                        value,
+                        new SectionWrapper(section),
+                        getConfigSection() + "." + key
+                );
+            }
 
-        try {
-            config.save(fileOpt.get());
-        } catch (IOException e) {
-            CraftyCore.INSTANCE.logger.error("Failed to save config file", e);
+            try {
+                config.save(fileOpt.get());
+            } catch (IOException e) {
+                CraftyCore.INSTANCE.logger.error("Failed to save config file", e);
+            }
         }
     }
 
@@ -177,9 +185,9 @@ public abstract class CachedConfigObject<K, V> {
                 fileOpt.get()
         );
 
-        ConfigurationSection regionsSection = config.getConfigurationSection(getConfigSection());
+        ConfigurationSection configSection = config.getConfigurationSection(getConfigSection());
 
-        if (regionsSection == null) {
+        if (configSection == null) {
             config.createSection(getConfigSection());
             try {
                 config.save(fileOpt.get());
@@ -190,9 +198,9 @@ public abstract class CachedConfigObject<K, V> {
             return Optional.empty();
         }
 
-        SectionWrapper section = new SectionWrapper(regionsSection);
+        SectionWrapper section = new SectionWrapper(configSection);
 
-        if (!regionsSection.contains(keyToString(id))) {
+        if (!configSection.contains(keyToString(id))) {
             return Optional.empty();
         }
 
@@ -208,6 +216,8 @@ public abstract class CachedConfigObject<K, V> {
      *
      * @param <K> the type of the key
      * @param <V> the type of the value
+     *
+     * @since 1.0.5
      */
     public static class Builder<K, V> {
         private File configFile;
