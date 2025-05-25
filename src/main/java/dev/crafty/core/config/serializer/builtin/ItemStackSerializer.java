@@ -6,6 +6,7 @@ import dev.crafty.core.util.*;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -18,14 +19,19 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
 
     @Override
-    public void serialize(ItemStack value, SectionWrapper section, String path) {
-        // todo
+    public void serialize(SerializationArgs<ItemStack> args) {
+        var value = args.value();
+        var section = args.section();
+        var path = args.path();
+
         if (value == null) {
             section.set(path, null);
             return;
         }
         
         section.set(path, value);
+
+        save(args);
     }
 
     @Override

@@ -1,12 +1,11 @@
 package dev.crafty.core.config.serializer;
 
 import dev.crafty.core.config.SectionWrapper;
-import org.bukkit.configuration.ConfigurationSection;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Factory for creating serializers for common types.
@@ -32,8 +31,14 @@ public class SerializerFactory {
         
         return new ConfigSerializer<>() {
             @Override
-            public void serialize(T value, SectionWrapper section, String path) {
+            public void serialize(SerializationArgs<T> args) {
+                var section = args.section();
+                var path = args.path();
+                var value = args.value();
+                
                 section.set(path, value);
+
+                save(args);
             }
 
             @Override
@@ -68,8 +73,14 @@ public class SerializerFactory {
         
         return new ConfigSerializer<>() {
             @Override
-            public void serialize(List<T> value, SectionWrapper section, String path) {
+            public void serialize(SerializationArgs<List<T>> args) {
+                var section = args.section();
+                var path = args.path();
+                var value = args.value();
+                
                 section.set(path, value);
+
+                save(args);
             }
 
             @Override
