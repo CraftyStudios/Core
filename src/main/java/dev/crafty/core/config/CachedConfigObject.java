@@ -175,7 +175,7 @@ public abstract class CachedConfigObject<K, V> {
 
         SectionWrapper section = new SectionWrapper(regionsSection);
 
-        if (!config.contains(String.valueOf(id))) {
+        if (!regionsSection.contains(String.valueOf(id))) {
             return Optional.empty();
         }
 
