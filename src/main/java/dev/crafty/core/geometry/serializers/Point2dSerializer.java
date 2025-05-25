@@ -13,6 +13,14 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 1.0.3
  */
 public class Point2dSerializer implements ConfigSerializer<Point2d> {
+    /**
+     * Serializes a Point2d object into the given configuration section at the specified path.
+     *
+     * @param value      The Point2d object to serialize.
+     * @param section    The configuration section where the data will be stored.
+     * @param path       The path within the section to store the Point2d data.
+     * @param configFile The configuration file to save changes to.
+     */
     @Override
     public void serialize(Point2d value, SectionWrapper section, String path, File configFile) {
         section.set(path + ".x", value.x());
