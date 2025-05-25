@@ -140,7 +140,7 @@ public abstract class CachedConfigObject<K, V> {
                 getSerializer().get().serialize(
                         value,
                         new SectionWrapper(section),
-                        getConfigSection() + "." + key
+                        getConfigSection() + "." + keyToString(key)
                 );
             }
 
