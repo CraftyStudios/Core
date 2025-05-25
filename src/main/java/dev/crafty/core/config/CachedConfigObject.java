@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * An abstract class that provides a cached, file-backed configuration object.
@@ -50,6 +51,14 @@ public abstract class CachedConfigObject<K, V> {
     protected abstract String getConfigSection();
 
     /**
+     * Converts a String key from the config to the correct key type.
+     *
+     * @param key the string key from config
+     * @return the key of type K
+     */
+    protected abstract K keyFromString(String key);
+
+    /**
      * Gets a value from the cache, loading from config if not present.
      *
      * @param key the key to look up
@@ -80,8 +89,9 @@ public abstract class CachedConfigObject<K, V> {
         }
 
         for (String key : section.getKeys(false)) {
-            Optional<V> value = getFromConfig((K) key);
-            value.ifPresent(v -> cache.put((K) key, v));
+            K typedKey = keyFromString(key);
+            Optional<V> value = getFromConfig(typedKey);
+            value.ifPresent(v -> cache.put(typedKey, v));
         }
     }
 
@@ -196,6 +206,7 @@ public abstract class CachedConfigObject<K, V> {
         private File configFile;
         private Optional<ConfigSerializer<V>> serializer = Optional.empty();
         private String configSection = "";
+        private Function<String, K> keyFromStringFunction;
 
         /**
          * Sets the config file to use.
@@ -231,6 +242,17 @@ public abstract class CachedConfigObject<K, V> {
         }
 
         /**
+         * Sets the function to convert string keys to keys of type K.
+         *
+         * @param keyFromStringFunction the function to convert string to K
+         * @return this builder
+         */
+        public Builder<K, V> keyFromStringFunction(Function<String, K> keyFromStringFunction) {
+            this.keyFromStringFunction = keyFromStringFunction;
+            return this;
+        }
+
+        /**
          * Builds a new {@link CachedConfigObject} instance with the configured parameters.
          *
          * @return a new CachedConfigObject instance
@@ -239,6 +261,7 @@ public abstract class CachedConfigObject<K, V> {
             final File file = this.configFile;
             final Optional<ConfigSerializer<V>> ser = this.serializer;
             final String section = this.configSection;
+            final Function<String, K> keyFromString = this.keyFromStringFunction;
 
             return new CachedConfigObject<>() {
                 @Override
@@ -254,6 +277,11 @@ public abstract class CachedConfigObject<K, V> {
                 @Override
                 protected String getConfigSection() {
                     return section;
+                }
+
+                @Override
+                protected K keyFromString(String key) {
+                    return keyFromString.apply(key);
                 }
             };
         }

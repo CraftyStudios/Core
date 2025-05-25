@@ -4,17 +4,13 @@ import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.config.ConfigurationUtils;
 import dev.crafty.core.config.ConfigWatcher;
 import dev.crafty.core.config.SectionWrapper;
-import dev.crafty.core.i18n.i18nManager;
 import dev.crafty.core.storage.ProviderManager;
-import dev.crafty.core.storage.StorageProvider;
 import dev.crafty.core.storage.StorageProviderFactory;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
