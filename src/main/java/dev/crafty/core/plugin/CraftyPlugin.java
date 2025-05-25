@@ -4,7 +4,6 @@ import co.aikar.commands.PaperCommandManager;
 import com.vdurmont.semver4j.Semver;
 import dev.crafty.core.CraftyCore;
 import dev.crafty.core.bridge.BridgeAutoRegistrar;
-import dev.crafty.core.bridge.BridgeManager;
 import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.bukkit.EnhancedBaseCommand;
 import dev.crafty.core.bukkit.SelfRegisteringListener;
