@@ -1,0 +1,35 @@
+name: Version & Changelog Checker
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-version-and-changelog:
+    name: Ensure Version & Changelog Updated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for git diff against base
+
+      - name: Check plugin.yml version changed
+        run: |
+          echo "🔍 Checking plugin.yml version..."
+          git diff origin/${{ github.base_ref }} -- plugin.yml | grep '^+version:' || {
+            echo "❌ ERROR: 'version:' not updated in plugin.yml!"
+            exit 1
+          }
+
+      - name: Check pom.xml version changed
+        run: |
+          echo "🔍 Checking pom.xml version..."
+          git diff origin/${{ github.base_ref }} -- pom.xml | grep -E '^\+.*<version>.*</version>' || {
+            echo "❌ ERROR: <version> not updated in pom.xml!"
+            exit 1
+          }
+
+      - name: ✅ All checks passed
+        run: echo "✅ plugin.yml, and pom.xml are good to go!"
