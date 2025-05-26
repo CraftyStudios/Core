@@ -1,0 +1,59 @@
+name: Check Version Bump
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # fetch full history for diff
+
+      - name: Install xmlstarlet
+        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
+
+      - name: Fetch main branch
+        run: git fetch origin main
+
+      - name: Extract plugin.yml version
+        id: plugin_version
+        run: |
+          PLUGIN_PATH=src/main/resources/plugin.yml
+          current_version=$(grep '^version:' "$PLUGIN_PATH" | awk '{print $2}')
+          base_version=$(git show origin/main:"$PLUGIN_PATH" | grep '^version:' | awk '{print $2}')
+
+          echo "Current plugin.yml version: $current_version"
+          echo "Base plugin.yml version: $base_version"
+
+          if [ "$current_version" = "$base_version" ]; then
+            echo "plugin_bumped=false" >> $GITHUB_OUTPUT
+          else
+            echo "plugin_bumped=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract pom.xml version
+        id: pom_version
+        run: |
+          current_version=$(xmlstarlet sel -N m="http://maven.apache.org/POM/4.0.0" -t -v "/m:project/m:version" pom.xml)
+          base_version=$(git show origin/main:pom.xml | xmlstarlet sel -N m="http://maven.apache.org/POM/4.0.0" -t -v "/m:project/m:version" -)
+
+          echo "Current pom.xml version: $current_version"
+          echo "Base pom.xml version: $base_version"
+
+          if [ "$current_version" = "$base_version" ]; then
+            echo "pom_bumped=false" >> $GITHUB_OUTPUT
+          else
+            echo "pom_bumped=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fail if versions not bumped
+        run: |
+          if [ "${{ steps.plugin_version.outputs.plugin_bumped }}" != "true" ] || [ "${{ steps.pom_version.outputs.pom_bumped }}" != "true" ]; then
+            echo "❌ You must bump both plugin.yml and pom.xml versions before merging to main."
+            exit 1
+          fi
