@@ -12,21 +12,25 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # needed to diff with main
+          fetch-depth: 0  # fetch full history for diff
 
-      - name: Get base branch (main)
-        run: git fetch origin main:refs/remotes/origin/main
+      - name: Install xmlstarlet
+        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
+
+      - name: Fetch main branch
+        run: git fetch origin main
 
       - name: Extract plugin.yml version
         id: plugin_version
         run: |
-          current_version=$(grep '^version:' plugin.yml | awk '{print $2}')
-          base_version=$(git show origin/main:plugin.yml | grep '^version:' | awk '{print $2}')
+          PLUGIN_PATH=src/main/resources/plugin.yml
+          current_version=$(grep '^version:' "$PLUGIN_PATH" | awk '{print $2}')
+          base_version=$(git show origin/main:"$PLUGIN_PATH" | grep '^version:' | awk '{print $2}')
+
           echo "Current plugin.yml version: $current_version"
           echo "Base plugin.yml version: $base_version"
 
           if [ "$current_version" = "$base_version" ]; then
-            echo "Plugin version not bumped!"
             echo "plugin_bumped=false" >> $GITHUB_OUTPUT
           else
             echo "plugin_bumped=true" >> $GITHUB_OUTPUT
@@ -35,13 +39,13 @@ jobs:
       - name: Extract pom.xml version
         id: pom_version
         run: |
-          current_version=$(xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
-          base_version=$(git show origin/main:pom.xml | xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" -)
+          current_version=$(xmlstarlet sel -t -v "/project/version" pom.xml)
+          base_version=$(git show origin/main:pom.xml | xmlstarlet sel -t -v "/project/version")
+
           echo "Current pom.xml version: $current_version"
           echo "Base pom.xml version: $base_version"
 
           if [ "$current_version" = "$base_version" ]; then
-            echo "POM version not bumped!"
             echo "pom_bumped=false" >> $GITHUB_OUTPUT
           else
             echo "pom_bumped=true" >> $GITHUB_OUTPUT
@@ -50,6 +54,6 @@ jobs:
       - name: Fail if versions not bumped
         run: |
           if [ "${{ steps.plugin_version.outputs.plugin_bumped }}" != "true" ] || [ "${{ steps.pom_version.outputs.pom_bumped }}" != "true" ]; then
-            echo "❌ Both plugin.yml and pom.xml versions must be bumped before merging to main."
+            echo "❌ You must bump both plugin.yml and pom.xml versions before merging to main."
             exit 1
           fi
