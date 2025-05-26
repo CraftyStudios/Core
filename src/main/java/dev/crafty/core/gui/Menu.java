@@ -146,7 +146,7 @@ public abstract class Menu implements Listener {
                 MenuItemEntry item = items.stream().filter(entry -> entry.character() == c).findFirst().orElse(null);
                 if (item != null) {
                     // Count how many times 'c' appears in layoutChars
-                    int count = (int) Arrays.stream(layoutChars).filter(ch -> ch == c).count();
+                    int count = (int) Arrays.stream(layoutChars).filter(ch -> Objects.equals(ch, c)).count();
                     ItemStack[] slotsToApplyTo = new ItemStack[count];
                     GuiItem[] guiItems = item.supplier().apply(slotsToApplyTo, item.section(), menu);
                     slotsToApplyTo = Arrays.stream(guiItems).map(GuiItem::item).filter(Objects::nonNull).toArray(ItemStack[]::new);
