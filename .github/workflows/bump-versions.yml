@@ -39,8 +39,8 @@ jobs:
       - name: Extract pom.xml version
         id: pom_version
         run: |
-          current_version=$(xmlstarlet sel -t -v "/project/version" pom.xml)
-          base_version=$(git show origin/main:pom.xml | xmlstarlet sel -t -v "/project/version")
+          current_version=$(xmlstarlet sel -N m="http://maven.apache.org/POM/4.0.0" -t -v "/m:project/m:version" pom.xml)
+          base_version=$(git show origin/main:pom.xml | xmlstarlet sel -N m="http://maven.apache.org/POM/4.0.0" -t -v "/m:project/m:version" -)
 
           echo "Current pom.xml version: $current_version"
           echo "Base pom.xml version: $base_version"
