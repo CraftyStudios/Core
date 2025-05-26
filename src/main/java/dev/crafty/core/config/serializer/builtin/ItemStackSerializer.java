@@ -104,7 +104,7 @@ public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
             try {
                 textures.setSkin(new URL(skullUrl));
             } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
+                CraftyCore.INSTANCE.logger.warn("Invalid skull URL: " + skullUrl + ". Using default texture.");
             }
             profile.setTextures(textures);
 
