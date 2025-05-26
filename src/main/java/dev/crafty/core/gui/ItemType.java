@@ -11,5 +11,4 @@ public enum ItemType {
     DYNAMIC,
     CONDITIONAL,
     MAPPED,
-//    TEMPLATE
 }
