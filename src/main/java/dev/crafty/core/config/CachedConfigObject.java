@@ -9,6 +9,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -100,6 +102,15 @@ public abstract class CachedConfigObject<K, V> {
             Optional<V> value = getFromConfig(typedKey);
             value.ifPresent(v -> cache.put(typedKey, v));
         }
+    }
+
+    /**
+     * Gets all values currently stored in the cache.
+     *
+     * @return a list of all cached values
+     */
+    public List<V> getAll() {
+        return new ArrayList<>(cache.asMap().values());
     }
 
     /**
