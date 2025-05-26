@@ -28,8 +28,11 @@ public class BridgeAutoRegistrar {
 
     public void registerAll() {
         for (BridgeProvider<? extends Bridge> provider : providers) {
+            plugin.logger.info("Checking availability for " + provider.getBridgeClass().getSimpleName());
             if (provider.isAvailable()) {
                 registerBridge(provider);
+            } else {
+                plugin.logger.info(provider.getBridgeClass().getSimpleName() + " is not available.");
             }
         }
     }
