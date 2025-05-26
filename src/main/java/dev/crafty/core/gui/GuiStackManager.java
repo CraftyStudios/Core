@@ -41,20 +41,29 @@ public class GuiStackManager {
      */
     public static void navigateBack(Player player) {
         Deque<Menu> stack = stacks.get(player.getUniqueId());
+        deduplicateStack(stack);
+
         if (stack != null && stack.size() > 1) {
             navigatingBack.put(player.getUniqueId(), true);
 
             stack.pop();
             Menu previousMenu = stack.peek();
 
-            // pass true: do not re-stack
+            // do not re-stack
             previousMenu.open(true);
+        } else if (stack != null && stack.size() == 1) {
+            // clear
+            stack.clear();
+            player.closeInventory();
         } else {
-            if (stack != null) {
-                stack.clear();
-            }
             player.closeInventory();
         }
+    }
+
+    private static void deduplicateStack(Deque<Menu> stack) {
+        if (stack == null) return;
+        Set<String> seen = new HashSet<>();
+        stack.removeIf(menu -> !seen.add(menu.id));
     }
 
 
@@ -88,26 +97,16 @@ public class GuiStackManager {
      * @param player The player who closed the inventory
      */
     public static void handleInventoryClose(Player player) {
-        if (suppressCloseHandling.remove(player.getUniqueId())) {
+        // Prevent popping the stack if a GUI transition/navigate is occurring
+        if (suppressCloseHandling.remove(player.getUniqueId()) || navigatingBack.remove(player.getUniqueId()) != null) {
             return;
         }
-
-        if (Boolean.TRUE.equals(navigatingBack.get(player.getUniqueId()))) {
-            navigatingBack.remove(player.getUniqueId());
-        } else {
-            pop(player);
+        // User closed the inventory directly, wipe the stack
+        Deque<Menu> stack = stacks.get(player.getUniqueId());
+        if (stack != null) {
+            stack.clear();
         }
     }
 
 
-    /**
-     * Clears the menu stack for a player.
-     * This should be called when a player logs out or when all menus should be closed.
-     *
-     * @param player The player whose stack should be cleared
-     */
-    public static void clearStack(Player player) {
-        stacks.remove(player.getUniqueId());
-        navigatingBack.remove(player.getUniqueId());
-    }
 }
