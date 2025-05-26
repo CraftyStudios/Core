@@ -139,6 +139,7 @@ public abstract class CraftyPlugin extends JavaPlugin {
     protected abstract void onConfigReloaded();
     protected abstract String minimumCoreVersion();
     protected abstract boolean hologramSupport();
+    protected abstract String getPackage();
     protected List<String> getRequiredPlugins() { return List.of(); }
     protected List<ScheduledAction> getScheduledActions() { return List.of(); }
 
@@ -204,17 +205,13 @@ public abstract class CraftyPlugin extends JavaPlugin {
 
     private boolean isPluginInstalled(String pluginName) {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-        boolean installed = plugin != null && plugin.isEnabled();
-        if (!installed) {
-            logger.warn("Plugin '%s' is not installed or not enabled.".formatted(pluginName));
-        }
-        return installed;
+        return plugin != null && plugin.isEnabled();
     }
 
     private void registerCommands() {
         try {
             commandManager = new PaperCommandManager(this);
-            String mainPackage = this.getClass().getPackageName();
+            String mainPackage = getPackage();
             Reflections reflections = new Reflections(mainPackage);
             for (Class<? extends EnhancedBaseCommand> clazz : reflections.getSubTypesOf(EnhancedBaseCommand.class)) {
                 if (!Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface()) {
@@ -234,7 +231,7 @@ public abstract class CraftyPlugin extends JavaPlugin {
 
     private void autoRegisterSelfRegisteringListeners() {
         try {
-            String mainPackage = this.getClass().getPackageName();
+            String mainPackage = getPackage();
             Reflections reflections = new Reflections(mainPackage);
             for (Class<? extends SelfRegisteringListener> clazz : reflections.getSubTypesOf(SelfRegisteringListener.class)) {
                 if (!Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface()) {
