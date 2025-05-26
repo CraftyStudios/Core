@@ -6,6 +6,9 @@ import org.bukkit.Location;
 
 import java.util.Optional;
 
+/**
+ * @since 1.0.9
+ */
 public class LocationSerializer implements ConfigSerializer<Location> {
     @Override
     public void serialize(SerializationArgs<Location> args) {
