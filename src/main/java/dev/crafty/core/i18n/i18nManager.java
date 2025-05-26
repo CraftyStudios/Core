@@ -16,9 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class i18nManager {
 
-    private final SectionWrapper langConfig;
+    private SectionWrapper langConfig;
+    private final CraftyPlugin plugin;
 
     public i18nManager(CraftyPlugin plugin) {
+        this.langConfig = Configs.getOrCreateConfigFile(plugin, "lang.yml");
+        this.plugin = plugin;
+    }
+
+    public void reload() {
         this.langConfig = Configs.getOrCreateConfigFile(plugin, "lang.yml");
     }
 

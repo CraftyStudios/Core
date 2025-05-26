@@ -169,6 +169,7 @@ public abstract class CraftyPlugin extends JavaPlugin {
 
     public void reloadAllConfigurations() {
         reloadConfig();
+        i18n.reload();
         if (craftyCore != null) {
             craftyCore.scanAndReloadConfigs(this);
             logger.info("All configurations reloaded successfully.");

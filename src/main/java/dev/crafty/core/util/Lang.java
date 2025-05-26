@@ -2,9 +2,9 @@ package dev.crafty.core.util;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +16,8 @@ import java.util.regex.Pattern;
 
 public class Lang {
     public static String colorize(String str) {
-        return ((TextComponent) (MiniMessage.miniMessage().deserialize(str).decoration(TextDecoration.ITALIC, false))).content();
+        Component component = MiniMessage.miniMessage().deserialize(str).decoration(TextDecoration.ITALIC, false);
+        return LegacyComponentSerializer.legacySection().serialize(component);
     }
 
 
