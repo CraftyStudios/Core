@@ -11,8 +11,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -90,22 +94,23 @@ public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
     }
 
     private void handleSkull(SectionWrapper itemSection, ItemStack item) {
-        var _skullValue = itemSection.getString("skull-value");
+        var _skullUrl = itemSection.getString("skull-url");
 
-        _skullValue.ifPresent(skullValue -> {
+        _skullUrl.ifPresent(skullUrl -> {
             SkullMeta meta = (SkullMeta) item.getItemMeta();
-            GameProfile profile = new GameProfile(UUID.randomUUID(), "");
-            profile.getProperties().put("textures", new Property("textures", skullValue));
-            Field profileField;
-            try {
-                profileField = meta.getClass().getDeclaredField("profile");
-                profileField.setAccessible(true);
-                profileField.set(meta, profile);
-            } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-                CraftyCore.INSTANCE.logger.error("Failed to set skull texture for item", e);
-            }
+            PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
+            PlayerTextures textures = profile.getTextures();
 
+            try {
+                textures.setSkin(new URL(skullUrl));
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            profile.setTextures(textures);
+
+            meta.setOwnerProfile(profile);
             item.setItemMeta(meta);
         });
     }
+
 }
