@@ -5,7 +5,7 @@ import dev.crafty.core.bridge.economy.vault.VaultEconomyBridgeProvider;
 import dev.crafty.core.bridge.placeholders.placeholderapi.PlaceholderApiBridgeProvider;
 import dev.crafty.core.plugin.CraftyPlugin;
 import lombok.AllArgsConstructor;
-import org.bukkit.plugin.Plugin;
+// Removed unused import for org.bukkit.plugin.Plugin
 
 import java.util.List;
 
