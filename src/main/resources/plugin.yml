@@ -1,4 +1,4 @@
 name: CraftyCore
-version: '1.0.9'
+version: '1.0.12'
 main: dev.crafty.core.CraftyCore
 api-version: '1.21'
