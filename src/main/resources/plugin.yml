@@ -1,5 +1,5 @@
 name: CraftyCore
-version: '1.0.18'
+version: '1.0.19'
 main: dev.crafty.core.CraftyCore
 api-version: '1.21'
 softdepend:
