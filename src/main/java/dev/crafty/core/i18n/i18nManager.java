@@ -61,7 +61,7 @@ public class i18nManager {
          * @return the current {@link LocalizationQuery} instance for method chaining
          */
         public LocalizationQuery placeholder(String key, String value) {
-            this.placeholders.put(key, value);
+            this.placeholders.put(key, value); // tewst
             return this;
         }
 
