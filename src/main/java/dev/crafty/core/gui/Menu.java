@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -37,6 +38,7 @@ public abstract class Menu implements Listener {
     protected final Plugin plugin;
 
     private final Map<String, Consumer<InventoryClickEvent>> actionsRegistry = new HashMap<>();
+
     private final Map<String, Supplier<ItemStack>> itemSuppliers = new HashMap<>();
     private final Map<String, MappedItemConfig<?>> mappedItemConfigs = new HashMap<>();
 
@@ -48,17 +50,32 @@ public abstract class Menu implements Listener {
         this.plugin = plugin;
 
         this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
+
+        registerAction("navigate_back", ignored -> GuiStackManager.navigateBack(this.player));
     }
 
     protected abstract void setup();
 
     public void open() {
+        open(false);
+    }
+
+    public void open(boolean stacked) {
         setup();
 
         var inventory = createInventory();
         this.inventory = inventory;
+
+        if (!stacked) {
+            GuiStackManager.markSuppressClose(this.player);
+        }
         this.player.openInventory(inventory);
+
+        if (!stacked) {
+            GuiStackManager.registerInStack(player, this);
+        }
     }
+
 
     private Inventory createInventory() {
         YamlConfiguration config = getConfigurationFile();
@@ -92,6 +109,15 @@ public abstract class Menu implements Listener {
                 .filter(guiItem -> guiItem.item().isSimilar(clickedItem))
                 .findFirst()
                 .ifPresent(item -> item.actions().forEach(action -> action.accept(event)));
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!event.getInventory().equals(this.inventory)) return;
+
+        if (event.getPlayer() instanceof Player player) {
+            GuiStackManager.handleInventoryClose(player);
+        }
     }
 
     private static FillConfig getFillConfig(YamlConfiguration config) {
