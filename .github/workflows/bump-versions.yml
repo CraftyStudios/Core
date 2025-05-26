@@ -1,40 +1,55 @@
-name: Version & Changelog Checker
+name: Check Version Bump
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches:
       - main
 
 jobs:
-  check-version-and-changelog:
-    name: Ensure Version & Changelog Updated
+  check-version-bump:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR and base branch
-        uses: actions/checkout@v4
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Required for full diff comparison
-          ref: ${{ github.head_ref }}
+          fetch-depth: 0  # needed to diff with main
 
-      - name: Fetch base branch for diff
-        run: git fetch origin ${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
+      - name: Get base branch (main)
+        run: git fetch origin main:refs/remotes/origin/main
 
-      - name: Check plugin.yml version changed
+      - name: Extract plugin.yml version
+        id: plugin_version
         run: |
-          echo "🔍 Checking plugin.yml version..."
-          git diff origin/${{ github.base_ref }} -- plugin.yml | grep '^+version:' || {
-            echo "❌ ERROR: 'version:' not updated in plugin.yml!"
-            exit 1
-          }
+          current_version=$(grep '^version:' plugin.yml | awk '{print $2}')
+          base_version=$(git show origin/main:plugin.yml | grep '^version:' | awk '{print $2}')
+          echo "Current plugin.yml version: $current_version"
+          echo "Base plugin.yml version: $base_version"
 
-      - name: Check pom.xml version changed
+          if [ "$current_version" = "$base_version" ]; then
+            echo "Plugin version not bumped!"
+            echo "plugin_bumped=false" >> $GITHUB_OUTPUT
+          else
+            echo "plugin_bumped=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract pom.xml version
+        id: pom_version
         run: |
-          echo "🔍 Checking pom.xml version..."
-          git diff origin/${{ github.base_ref }} -- pom.xml | grep -E '^\+.*<version>.*</version>' || {
-            echo "❌ ERROR: <version> not updated in pom.xml!"
-            exit 1
-          }
+          current_version=$(xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+          base_version=$(git show origin/main:pom.xml | xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" -)
+          echo "Current pom.xml version: $current_version"
+          echo "Base pom.xml version: $base_version"
 
-      - name: ✅ All checks passed
-        run: echo "✅ plugin.yml and pom.xml version changes detected. All good!"
+          if [ "$current_version" = "$base_version" ]; then
+            echo "POM version not bumped!"
+            echo "pom_bumped=false" >> $GITHUB_OUTPUT
+          else
+            echo "pom_bumped=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fail if versions not bumped
+        run: |
+          if [ "${{ steps.plugin_version.outputs.plugin_bumped }}" != "true" ] || [ "${{ steps.pom_version.outputs.pom_bumped }}" != "true" ]; then
+            echo "❌ Both plugin.yml and pom.xml versions must be bumped before merging to main."
+            exit 1
+          fi
