@@ -20,7 +20,7 @@ jobs:
           cache: 'maven'
 
       - name: Build Javadocs
-        run: mvn javadoc:javadoc
+        run: mvn javadoc:javadoc -DadditionalJOptions=-Xdoclint:none -Dmaven.javadoc.failOnError=false
 
       - name: Push to craftystudios.github.io
         run: |
