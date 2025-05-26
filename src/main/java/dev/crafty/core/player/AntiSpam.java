@@ -95,9 +95,6 @@ public class AntiSpam {
             UUID uuid = player.getUniqueId();
             long now = System.currentTimeMillis();
             Map<String, Long> typeMap = cooldownCache.get(uuid, k -> new ConcurrentHashMap<>());
-            if (typeMap == null) {
-                typeMap = new ConcurrentHashMap<>();
-            }
             Long lastSent = typeMap.get(key);
 
             if (lastSent != null && now - lastSent < cooldown.toMillis()) {
