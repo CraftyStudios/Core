@@ -1,7 +1,6 @@
 package dev.crafty.core.config.serializer.builtin;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
+// Removed unused imports
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import dev.crafty.core.CraftyCore;
