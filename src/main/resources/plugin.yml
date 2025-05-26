@@ -1,4 +1,7 @@
 name: CraftyCore
-version: '1.0.15'
+version: '1.0.16'
 main: dev.crafty.core.CraftyCore
 api-version: '1.21'
+softdepend:
+  - PlaceholderAPI
+  - Vault
