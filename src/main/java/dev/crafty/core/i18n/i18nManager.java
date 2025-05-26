@@ -103,7 +103,8 @@ public class i18nManager {
 
         private void replacePlaceholders(AtomicReference<String> value, String processed) {
             for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-                processed = processed.replace("{" + entry.getKey() + "}", entry.getValue());
+                String colorizedEntryValue = Lang.colorize(entry.getValue());
+                processed = processed.replace("{" + entry.getKey() + "}", colorizedEntryValue);
             }
             value.set(processed);
         }

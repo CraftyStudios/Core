@@ -20,7 +20,6 @@ public class Lang {
         return LegacyComponentSerializer.legacySection().serialize(component);
     }
 
-
     public static List<String> colorizeList(List<String> str) {
         return str.stream().map(Lang::colorize).toList();
     }
