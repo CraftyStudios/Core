@@ -113,6 +113,13 @@ public class Lang {
         item.setItemMeta(meta);
     }
 
+    /**
+     * Replaces placeholders in the given message using the PlaceholderAPI context.
+     *
+     * @param message The input string containing placeholders to be replaced.
+     * @param player The player context for placeholder replacement. If null, global placeholders are used.
+     * @return The message with placeholders replaced. If no PlaceholderBridge is available, the original message is returned.
+     */
     public static String replacePlaceholders(String message, Player player) {
         PlaceholderBridge bridge = BridgeManager.getBridge(PlaceholderBridge.class);
         if (bridge == null) {
