@@ -121,8 +121,7 @@ public abstract class CraftyPlugin extends JavaPlugin {
             ex.printStackTrace();
         }
 
-
-        Bukkit.getScheduler().runTask(this, this::postStartup);
+        Bukkit.getScheduler().runTaskAsynchronously(this, this::postStartup);
     }
 
     @Override

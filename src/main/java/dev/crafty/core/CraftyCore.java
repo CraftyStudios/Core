@@ -53,7 +53,7 @@ public final class CraftyCore extends JavaPlugin {
             setupConfigWatcher();
         }
 
-        Bukkit.getScheduler().runTask(this, () -> new BridgeAutoRegistrar(this).registerAll());
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> new BridgeAutoRegistrar(this).registerAll());
 
         logger.info("CraftyCore has been enabled!");
     }
