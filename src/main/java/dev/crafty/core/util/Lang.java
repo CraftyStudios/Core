@@ -113,7 +113,7 @@ public class Lang {
         item.setItemMeta(meta);
     }
 
-    private static String replacePlaceholders(String message, Player player) {
+    public static String replacePlaceholders(String message, Player player) {
         PlaceholderBridge bridge = BridgeManager.getBridge(PlaceholderBridge.class);
         if (bridge == null) {
             return message;
