@@ -38,7 +38,6 @@ public abstract class Item implements Listener {
 
     private final String id;
     private ItemStack item;
-    private boolean craftable = true;
     private ItemCraftingRecipe craftingRecipe;
     private List<ItemAction> itemActions = new ArrayList<>();
     private final CraftyPlugin plugin;
@@ -75,37 +74,67 @@ public abstract class Item implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-        if (event.getItem() == null || event.getItem().getType() == Material.AIR) {
-            return;
-        }
-
-        ItemMeta meta = event.getItem().getItemMeta();
-        if (meta == null || !meta.getPersistentDataContainer().has(ITEM_KEY, PersistentDataType.STRING)) {
-            return;
-        }
-
-        String itemId = meta.getPersistentDataContainer().get(ITEM_KEY, PersistentDataType.STRING);
-        if (!itemId.equals(this.id)) {
+        if (!isRelevantItem(event)) {
             return;
         }
 
         for (ItemAction action : this.itemActions) {
-            if (action.conditions() != null) {
-                for (ItemActionCondition condition : action.conditions()) {
-                    if (!condition.canExecute(event.getPlayer())) {
-                        if (!condition.denyMessage().isEmpty()) {
-                            event.getPlayer().sendMessage(Lang.colorize(condition.denyMessage()));
-                        }
-                        return;
-                    }
-                }
+            if (!validateConditions(action, event)) {
+                return;
+            }
+            executeAction(action, event);
+        }
+    }
 
-                if (this.actions.containsKey(action.actionId())) {
-                    this.actions.get(action.actionId()).accept(event, this.item);
-                } else {
-                    plugin.logger.warn("No action registered for item action: " + action.actionId() + " in item: " + this.id);
+    private boolean isRelevantItem(PlayerInteractEvent event) {
+        if (event.getItem() == null || event.getItem().getType() == Material.AIR) {
+            return false;
+        }
+        ItemMeta meta = event.getItem().getItemMeta();
+
+        if (meta == null || !meta.getPersistentDataContainer().has(ITEM_KEY, PersistentDataType.STRING)) {
+            return false;
+        }
+
+        String itemId = meta.getPersistentDataContainer().get(ITEM_KEY, PersistentDataType.STRING);
+
+        if (itemId == null || itemId.isEmpty()) {
+            return false;
+        }
+
+        return itemId.equals(this.id);
+    }
+
+    private boolean validateConditions(ItemAction action, PlayerInteractEvent event) {
+        if (action.conditions() != null) {
+            for (ItemActionCondition condition : action.conditions()) {
+                if (!canExecuteCondition(condition, event)) {
+                    return false;
                 }
             }
+        }
+        return true;
+    }
+
+    private boolean canExecuteCondition(ItemActionCondition condition, PlayerInteractEvent event) {
+        if (!condition.canExecute(event.getPlayer())) {
+            sendDenyMessageIfPresent(condition, event);
+            return false;
+        }
+        return true;
+    }
+
+    private void sendDenyMessageIfPresent(ItemActionCondition condition, PlayerInteractEvent event) {
+        if (!condition.denyMessage().isEmpty()) {
+            event.getPlayer().sendMessage(Lang.colorize(condition.denyMessage()));
+        }
+    }
+
+    private void executeAction(ItemAction action, PlayerInteractEvent event) {
+        if (this.actions.containsKey(action.actionId())) {
+            this.actions.get(action.actionId()).accept(event, this.item);
+        } else {
+            plugin.logger.warn("No action registered for item action: " + action.actionId() + " in item: " + this.id);
         }
     }
 
@@ -117,7 +146,7 @@ public abstract class Item implements Listener {
             throw new IllegalStateException("Configuration section is null for item: " + this.id);
         }
 
-        this.craftable = configurationSection.getBoolean("craftable", true);
+        boolean craftable = configurationSection.getBoolean("craftable", true);
 
         ItemStackSerializer serializer = getItemStackSerializer();
         this.item = deserializeItemStack(serializer, configurationSection);
@@ -130,7 +159,7 @@ public abstract class Item implements Listener {
 
         plugin.logger.info("Loaded item: " + this.id);
 
-        if (this.craftingRecipe != null && this.craftable) {
+        if (this.craftingRecipe != null && craftable) {
             setupRecipe();
         } else {
             Bukkit.removeRecipe(new NamespacedKey(CraftyCore.INSTANCE, "crafting_recipe_" + this.id));
