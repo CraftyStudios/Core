@@ -6,6 +6,7 @@ import dev.crafty.core.config.serializer.ConfigSerializer;
 import dev.crafty.core.config.serializer.SerializerFactory;
 import dev.crafty.core.config.serializer.SerializerRegistry;
 import dev.crafty.core.config.serializer.builtin.ItemStackSerializer;
+import dev.crafty.core.config.serializer.builtin.LocationSerializer;
 import dev.crafty.core.geometry.Point2d;
 import dev.crafty.core.geometry.polygons.Polygon3d;
 import dev.crafty.core.geometry.serializers.Point2dSerializer;
@@ -58,6 +59,7 @@ public class ConfigurationUtils {
         SerializerRegistry.register(new ItemStackSerializer());
         SerializerRegistry.register(new Point2dSerializer());
         SerializerRegistry.register(new Polygon3dSerializer());
+        SerializerRegistry.register(new LocationSerializer());
 
         plugin.getLogger().info("Configuration system initialized");
     }

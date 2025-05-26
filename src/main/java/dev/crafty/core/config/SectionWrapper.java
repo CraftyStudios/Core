@@ -1,6 +1,7 @@
 package dev.crafty.core.config;
 
 import lombok.Getter;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.List;
@@ -108,4 +109,7 @@ public class SectionWrapper {
         return Optional.of(delegate.getLongList(path));
     }
 
+    public Optional<Location> getLocation(String path) {
+        return Optional.ofNullable(delegate.getLocation(path));
+    }
 }
