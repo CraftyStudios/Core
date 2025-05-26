@@ -1,0 +1,35 @@
+name: Deploy Javadoc to craftystudios.github.io
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Javadocs
+        run: ./mvnw javadoc:javadoc
+
+      - name: Push to craftystudios.github.io
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git clone https://x-access-token:${{ secrets.GH_PAGES_DEPLOY_TOKEN }}@github.com/craftystudios/craftystudios.github.io.git out
+          rm -rf out/*
+          cp -r target/site/apidocs/* out/
+          cd out
+          touch .nojekyll  # disables Jekyll so files like _index.html aren't ignored
+          git add .
+          git commit -m "Deploy updated Javadocs"
+          git push origin main
