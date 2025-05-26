@@ -1,5 +1,6 @@
 package dev.crafty.core;
 
+import dev.crafty.core.bridge.BridgeAutoRegistrar;
 import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.config.ConfigurationUtils;
 import dev.crafty.core.config.ConfigWatcher;
@@ -47,6 +48,9 @@ public final class CraftyCore extends JavaPlugin {
         if (configWatcherEnabled) {
             setupConfigWatcher();
         }
+
+        BridgeAutoRegistrar bridgeRegistrar = new BridgeAutoRegistrar(this);
+        bridgeRegistrar.registerAll();
 
         logger.info("CraftyCore has been enabled!");
     }

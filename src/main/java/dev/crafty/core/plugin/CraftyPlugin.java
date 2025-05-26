@@ -110,11 +110,6 @@ public abstract class CraftyPlugin extends JavaPlugin {
         logger.info("Setting up scheduler...");
         setupScheduler();
 
-        // Bridge
-        BridgeAutoRegistrar registrar = new BridgeAutoRegistrar(this);
-        registrar.registerAll();
-        logger.info("Bridges registered.");
-
         logger.info("Plugin enabled successfully.");
         try {
             onCraftyEnable();

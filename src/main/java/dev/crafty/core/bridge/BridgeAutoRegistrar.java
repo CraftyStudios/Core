@@ -1,9 +1,11 @@
 package dev.crafty.core.bridge;
 
+import dev.crafty.core.CraftyCore;
 import dev.crafty.core.bridge.economy.vault.VaultEconomyBridgeProvider;
 import dev.crafty.core.bridge.placeholders.placeholderapi.PlaceholderApiBridgeProvider;
 import dev.crafty.core.plugin.CraftyPlugin;
 import lombok.AllArgsConstructor;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
@@ -13,7 +15,7 @@ import java.util.List;
  */
 @AllArgsConstructor
 public class BridgeAutoRegistrar {
-    private CraftyPlugin plugin;
+    private CraftyCore plugin;
 
     private final List<BridgeProvider<? extends Bridge>> providers = List.of(
             // Economy
