@@ -29,6 +29,8 @@ public final class CraftyCore extends JavaPlugin {
     @Getter
     private boolean configWatcherEnabled = true;
 
+    private boolean configInitialized = false;
+
     public CraftyLogger logger;
 
     @Override
@@ -41,7 +43,9 @@ public final class CraftyCore extends JavaPlugin {
 
         setDefaultStorageProvider(new SectionWrapper(getConfig().getConfigurationSection("storage")));
 
-        ConfigurationUtils.initialize(this);
+        if (!configInitialized) {
+            ConfigurationUtils.initialize(this, () -> configInitialized = true);
+        }
 
         // Set up the config watcher if enabled
         if (configWatcherEnabled) {
@@ -54,6 +58,12 @@ public final class CraftyCore extends JavaPlugin {
     @Override
     public void reloadConfig() {
         super.reloadConfig();
+
+        // issue where reloadConfig is potentially called before onEnable()...
+        if (!configInitialized) {
+            ConfigurationUtils.initialize(this, () -> configInitialized = true);
+        }
+
         onConfigReloaded();
     }
 
