@@ -9,6 +9,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -99,6 +101,43 @@ public abstract class CachedConfigObject<K, V> {
             K typedKey = keyFromString(key);
             Optional<V> value = getFromConfig(typedKey);
             value.ifPresent(v -> cache.put(typedKey, v));
+        }
+    }
+
+    /**
+     * Gets all values currently stored in the cache.
+     *
+     * @return a list of all cached values
+     */
+    public List<V> getAll() {
+        return new ArrayList<>(cache.asMap().values());
+    }
+
+    /**
+     * Removes a value from the cache and the config file.
+     *
+     * @param key the key to remove
+     */
+    public void remove(K key) {
+        cache.invalidate(key);
+        Optional<File> fileOpt = ensureFileExists();
+        if (fileOpt.isEmpty()) {
+            return;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(fileOpt.get());
+        ConfigurationSection section = config.getConfigurationSection(getConfigSection());
+
+        if (section == null) {
+            return;
+        }
+
+        section.set(keyToString(key), null);
+
+        try {
+            config.save(fileOpt.get());
+        } catch (IOException e) {
+            CraftyCore.INSTANCE.logger.error("Failed to save config file", e);
         }
     }
 
