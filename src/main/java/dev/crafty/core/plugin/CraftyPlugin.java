@@ -3,7 +3,8 @@ package dev.crafty.core.plugin;
 import co.aikar.commands.PaperCommandManager;
 import com.vdurmont.semver4j.Semver;
 import dev.crafty.core.CraftyCore;
-import dev.crafty.core.bridge.BridgeAutoRegistrar;
+import dev.crafty.core.bridge.BridgeManager;
+import dev.crafty.core.bridge.placeholders.PlaceholderBridge;
 import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.bukkit.EnhancedBaseCommand;
 import dev.crafty.core.bukkit.SelfRegisteringListener;
@@ -15,7 +16,6 @@ import dev.crafty.core.scheduler.SchedulerService;
 import dev.crafty.core.task.api.Task;
 import dev.crafty.core.task.providers.TaskProvider;
 import io.papermc.paper.plugin.configuration.PluginMeta;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -121,7 +121,12 @@ public abstract class CraftyPlugin extends JavaPlugin {
             ex.printStackTrace();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, this::postStartup);
+        // blocking
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            logger.info("Running post-startup tasks...");
+            postStartup();
+            logger.info("Post-startup tasks completed.");
+        }, 20L);
     }
 
     @Override

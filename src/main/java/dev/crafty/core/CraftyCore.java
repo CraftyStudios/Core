@@ -1,6 +1,10 @@
 package dev.crafty.core;
 
-import dev.crafty.core.bridge.BridgeAutoRegistrar;
+import dev.crafty.core.bridge.BridgeManager;
+import dev.crafty.core.bridge.economy.EconomyBridge;
+import dev.crafty.core.bridge.economy.vault.VaultEconomyBridge;
+import dev.crafty.core.bridge.placeholders.PlaceholderBridge;
+import dev.crafty.core.bridge.placeholders.placeholderapi.PlaceholderApiBridge;
 import dev.crafty.core.bukkit.CraftyLogger;
 import dev.crafty.core.config.ConfigurationUtils;
 import dev.crafty.core.config.ConfigWatcher;
@@ -53,7 +57,8 @@ public final class CraftyCore extends JavaPlugin {
             setupConfigWatcher();
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> new BridgeAutoRegistrar(this).registerAll());
+        // blocking
+        Bukkit.getScheduler().runTask(this, this::registerAllBridges);
 
         logger.info("CraftyCore has been enabled!");
     }
@@ -279,5 +284,13 @@ public final class CraftyCore extends JavaPlugin {
                 ProviderManager.getInstance().setDefaultMongoDbConfig("main", connectionString);
             }
         }
+    }
+
+    private void registerAllBridges() {
+        // Placeholders
+        BridgeManager.registerBridge(PlaceholderBridge.class, new PlaceholderApiBridge());
+
+        // Economy
+        BridgeManager.registerBridge(EconomyBridge.class, new VaultEconomyBridge());
     }
 }

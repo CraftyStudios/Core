@@ -27,4 +27,9 @@ public class VaultEconomyBridge implements EconomyBridge {
     public String getName() {
         return "Vault";
     }
+
+    @Override
+    public boolean canRegister() {
+        return pluginEnabled("Vault");
+    }
 }
