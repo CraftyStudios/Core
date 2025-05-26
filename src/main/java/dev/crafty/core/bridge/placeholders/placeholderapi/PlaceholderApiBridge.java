@@ -60,4 +60,9 @@ public class PlaceholderApiBridge implements PlaceholderBridge {
     public String getName() {
         return "PlaceholderAPI";
     }
+
+    @Override
+    public boolean canRegister() {
+        return pluginEnabled("PlaceholderAPI");
+    }
 }

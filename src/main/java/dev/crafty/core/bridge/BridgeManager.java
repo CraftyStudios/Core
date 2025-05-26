@@ -18,6 +18,10 @@ public class BridgeManager {
             bridges = new ArrayList<>();
         }
 
+        if (!bridge.canRegister()) {
+            return;
+        }
+
         bridges.add(bridge);
 
         BridgeManager.bridges.put(clazz, bridges);
