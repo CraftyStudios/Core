@@ -1,13 +1,21 @@
 package dev.crafty.core.config.serializer.builtin;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import dev.crafty.core.CraftyCore;
 import dev.crafty.core.config.SectionWrapper;
 import dev.crafty.core.config.serializer.ConfigSerializer;
 import dev.crafty.core.util.*;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
-import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -66,6 +74,10 @@ public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
                     Items.setItemGlow(item);
                 }
 
+               if (material == Material.PLAYER_HEAD) {
+                   handleSkull(section, item);
+               }
+
                 itemStack.set(item);
            });
         });
@@ -76,5 +88,25 @@ public class ItemStackSerializer implements ConfigSerializer<ItemStack> {
     @Override
     public Class<ItemStack> getType() {
         return ItemStack.class;
+    }
+
+    private void handleSkull(SectionWrapper itemSection, ItemStack item) {
+        var _skullValue = itemSection.getString("skull-value");
+
+        _skullValue.ifPresent(skullValue -> {
+            SkullMeta meta = (SkullMeta) item.getItemMeta();
+            GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+            profile.getProperties().put("textures", new Property("textures", skullValue));
+            Field profileField;
+            try {
+                profileField = meta.getClass().getDeclaredField("profile");
+                profileField.setAccessible(true);
+                profileField.set(meta, profile);
+            } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+                CraftyCore.INSTANCE.logger.error("Failed to set skull texture for item", e);
+            }
+
+            item.setItemMeta(meta);
+        });
     }
 }

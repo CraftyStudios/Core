@@ -207,5 +207,12 @@
             <artifactId>caffeine</artifactId>
             <version>3.2.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>authlib</artifactId>
+            <version>3.13.56</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
