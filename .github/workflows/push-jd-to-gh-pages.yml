@@ -19,8 +19,11 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: Build Javadocs
+      - name: Build Javadocs ignoring errors
         run: mvn javadoc:javadoc -DadditionalJOptions=-Xdoclint:none -Dmaven.javadoc.failOnError=false
+
+      - name: List generated Javadoc files
+        run: ls -l target/reports/apidocs || ls -l target/site/apidocs
 
       - name: Push to craftystudios.github.io
         run: |
@@ -28,9 +31,10 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git clone https://x-access-token:${{ secrets.GH_PAGES_DEPLOY_TOKEN }}@github.com/craftystudios/craftystudios.github.io.git out
           rm -rf out/*
-          cp -r target/site/apidocs/* out/
+          cp -r target/reports/apidocs/* out/
           cd out
-          touch .nojekyll  # disables Jekyll so files like _index.html aren't ignored
+          touch .nojekyll
           git add .
           git commit -m "Deploy updated Javadocs"
           git push origin main
+      
