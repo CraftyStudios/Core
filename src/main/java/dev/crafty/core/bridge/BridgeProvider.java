@@ -13,6 +13,6 @@ public interface BridgeProvider<T extends Bridge> {
     Class<T> getBridgeClass();
 
     default boolean pluginEnabled(String pluginName) {
-        return Bukkit.getPluginManager().isPluginEnabled(pluginName);
+        return Bukkit.getPluginManager().isPluginEnabled(pluginName); // wont be enabled on startup
     }
 }

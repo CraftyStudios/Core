@@ -22,6 +22,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.holoeasy.HoloEasy;
 import org.holoeasy.packet.PacketImpl;
 import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -117,6 +120,9 @@ public abstract class CraftyPlugin extends JavaPlugin {
             logger.error("Error in onCraftyEnable: " + ex.getMessage());
             ex.printStackTrace();
         }
+
+
+        Bukkit.getScheduler().runTask(this, this::postStartup);
     }
 
     @Override
@@ -142,6 +148,7 @@ public abstract class CraftyPlugin extends JavaPlugin {
     protected abstract String getPackage();
     protected List<String> getRequiredPlugins() { return List.of(); }
     protected List<ScheduledAction> getScheduledActions() { return List.of(); }
+    protected void postStartup() {}
 
     protected void setConfigWatcherEnabled(boolean enabled) {
         configWatcherEnabled = enabled;
@@ -212,7 +219,11 @@ public abstract class CraftyPlugin extends JavaPlugin {
         try {
             commandManager = new PaperCommandManager(this);
             String mainPackage = getPackage();
-            Reflections reflections = new Reflections(mainPackage);
+            Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .setUrls(ClasspathHelper.forPackage(mainPackage, getClass().getClassLoader()))
+                    .setScanners(new SubTypesScanner(false))
+            );
+
             for (Class<? extends EnhancedBaseCommand> clazz : reflections.getSubTypesOf(EnhancedBaseCommand.class)) {
                 if (!Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface()) {
                     try {
@@ -232,7 +243,10 @@ public abstract class CraftyPlugin extends JavaPlugin {
     private void autoRegisterSelfRegisteringListeners() {
         try {
             String mainPackage = getPackage();
-            Reflections reflections = new Reflections(mainPackage);
+            Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .setUrls(ClasspathHelper.forPackage(mainPackage, getClass().getClassLoader()))
+                    .setScanners(new SubTypesScanner(false))
+            );
             for (Class<? extends SelfRegisteringListener> clazz : reflections.getSubTypesOf(SelfRegisteringListener.class)) {
                 if (!Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface()) {
                     try {
