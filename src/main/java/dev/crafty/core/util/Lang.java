@@ -126,10 +126,6 @@ public class Lang {
             return message;
         }
 
-        if (player != null) {
-            return bridge.replacePlaceholders(message, player);
-        } else {
-            return bridge.replacePlaceholders(message, null);
-        }
+        return bridge.replacePlaceholders(message, player);
     }
 }
