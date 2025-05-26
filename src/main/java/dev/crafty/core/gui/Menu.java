@@ -136,19 +136,18 @@ public abstract class Menu implements Listener {
         var baseInv = createBaseInventory(layout, title);
 
         ItemStack[] inventory = new ItemStack[baseInv.getSize()];
-        Character[] layoutChars = new Character[inventory.length];
+        Character[] layoutChars = layout.toArray(new Character[0]);
 
-        layoutChars = layout.toArray(layoutChars);
-
-        Preconditions.checkArgument(inventory.length == layout.size(), "Inventory size does not match layout size");
+        Preconditions.checkArgument(inventory.length == layoutChars.length, "Inventory size does not match layout size");
 
         for (int i = 0; i < inventory.length; i++) {
-            Character c = layout.poll();
-            // '#' is reserved for fill or air
+            Character c = layoutChars[i];
             if (c != '#') {
                 MenuItemEntry item = items.stream().filter(entry -> entry.character() == c).findFirst().orElse(null);
                 if (item != null) {
-                    ItemStack[] slotsToApplyTo = new ItemStack[getCountOfCharacter(c, layout)];
+                    // Count how many times 'c' appears in layoutChars
+                    int count = (int) Arrays.stream(layoutChars).filter(ch -> Objects.equals(ch, c)).count();
+                    ItemStack[] slotsToApplyTo = new ItemStack[count];
                     GuiItem[] guiItems = item.supplier().apply(slotsToApplyTo, item.section(), menu);
                     slotsToApplyTo = Arrays.stream(guiItems).map(GuiItem::item).filter(Objects::nonNull).toArray(ItemStack[]::new);
 

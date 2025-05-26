@@ -26,6 +26,12 @@ public abstract class ItemSupplier {
         return items;
     }
 
+    protected GuiItem[] toArray(GuiItem item, int times) {
+        GuiItem[] array = new GuiItem[times];
+        Arrays.fill(array, item);
+        return array;
+    }
+
     protected List<Consumer<InventoryClickEvent>> getActions(SectionWrapper section, Menu menu) {
         if (!section.contains("actions")) {
             return List.of();

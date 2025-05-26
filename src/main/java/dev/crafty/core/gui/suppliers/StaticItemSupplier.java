@@ -37,7 +37,8 @@ public class StaticItemSupplier extends ItemSupplier {
         applyToAll(slotsToApplyTo, item);
 
         return toArray(
-                new GuiItem(item, getActions(itemSection, menu))
+                new GuiItem(item, getActions(itemSection, menu)),
+                slotsToApplyTo.length
         );
     }
 }
