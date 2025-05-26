@@ -6,7 +6,7 @@
 
     <groupId>dev.crafty</groupId>
     <artifactId>craftycore</artifactId>
-    <version>1.0.13</version>
+    <version>1.0.14</version>
     <packaging>jar</packaging>
 
     <name>CraftyCore</name>
@@ -50,9 +50,20 @@
                             <pattern>co.aikar.commands</pattern>
                             <shadedPattern>dev.crafty.core.acf</shadedPattern>
                         </relocation>
+
                         <relocation>
                             <pattern>co.aikar.locales</pattern>
                             <shadedPattern>dev.crafty.core.locales</shadedPattern>
+                        </relocation>
+
+                        <relocation>
+                            <pattern>com.fasterxml.jackson</pattern>
+                            <shadedPattern>dev.crafty.core.shaded.jackson</shadedPattern>
+                        </relocation>
+
+                        <relocation>
+                            <pattern>com.google.protobuf</pattern>
+                            <shadedPattern>dev.crafty.shaded.protobuf</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -165,6 +176,19 @@
             <artifactId>semver4j</artifactId>
             <version>3.1.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
