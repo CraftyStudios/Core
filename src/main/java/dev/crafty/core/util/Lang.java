@@ -1,6 +1,7 @@
 package dev.crafty.core.util;
 
-import me.clip.placeholderapi.PlaceholderAPI;
+import dev.crafty.core.bridge.BridgeManager;
+import dev.crafty.core.bridge.placeholders.PlaceholderBridge;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -36,15 +37,11 @@ public class Lang {
         Component cleaned = Components.unwrapSquareBrackets(component);
         String plainText = PlainTextComponentSerializer.plainText().serialize(cleaned);
 
-        String replaced = PlaceholderAPI.setPlaceholders(viewer, plainText);
+        String replaced = replacePlaceholders(plainText, viewer);
 
         return MiniMessage.miniMessage()
                 .deserialize(replaced)
                 .decoration(TextDecoration.ITALIC, false);
-    }
-
-    public static String replacePlaceholders(String str, Player viewer) {
-        return PlaceholderAPI.setPlaceholders(viewer, str);
     }
 
     /**
@@ -57,7 +54,7 @@ public class Lang {
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
             String placeholder = matcher.group();
-            String value = PlaceholderAPI.setPlaceholders(viewer, placeholder);
+            String value = replacePlaceholders(placeholder, viewer);
 
             String replacement;
             value = value.trim();
@@ -114,5 +111,18 @@ public class Lang {
         }
 
         item.setItemMeta(meta);
+    }
+
+    private static String replacePlaceholders(String message, Player player) {
+        PlaceholderBridge bridge = BridgeManager.getBridge(PlaceholderBridge.class);
+        if (bridge == null) {
+            return message;
+        }
+
+        if (player != null) {
+            return bridge.replacePlaceholders(message, player);
+        } else {
+            return bridge.replacePlaceholders(message, null);
+        }
     }
 }
