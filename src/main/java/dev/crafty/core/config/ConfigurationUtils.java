@@ -49,7 +49,7 @@ public class ConfigurationUtils {
      *
      * @param plugin The plugin instance
      */
-    public static void initialize(Plugin plugin) {
+    public static void initialize(Plugin plugin, Runnable callback) {
         ConfigurationUtils.plugin = plugin;
         configManager = new ConfigurationManager(plugin);
         configManagers.put(plugin, configManager);
@@ -62,6 +62,7 @@ public class ConfigurationUtils {
         SerializerRegistry.register(new LocationSerializer());
 
         plugin.getLogger().info("Configuration system initialized");
+        callback.run();
     }
 
     /**
