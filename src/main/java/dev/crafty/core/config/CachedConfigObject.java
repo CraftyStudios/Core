@@ -114,6 +114,34 @@ public abstract class CachedConfigObject<K, V> {
     }
 
     /**
+     * Removes a value from the cache and the config file.
+     *
+     * @param key the key to remove
+     */
+    public void remove(K key) {
+        cache.invalidate(key);
+        Optional<File> fileOpt = ensureFileExists();
+        if (fileOpt.isEmpty()) {
+            return;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(fileOpt.get());
+        ConfigurationSection section = config.getConfigurationSection(getConfigSection());
+
+        if (section == null) {
+            return;
+        }
+
+        section.set(keyToString(key), null);
+
+        try {
+            config.save(fileOpt.get());
+        } catch (IOException e) {
+            CraftyCore.INSTANCE.logger.error("Failed to save config file", e);
+        }
+    }
+
+    /**
      * Sets a value in the cache and saves it to the config file.
      *
      * @param key the key to set
