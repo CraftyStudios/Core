@@ -12,9 +12,9 @@ import java.util.*;
  * @since 1.0.20
  */
 public class GuiStackManager {
-    private static final Map<Player, Deque<Menu>> stacks = new HashMap<>();
-    private static final Map<Player, Boolean> navigatingBack = new HashMap<>();
-    private static final Set<Player> suppressCloseHandling = new HashSet<>();
+    private static final Map<UUID, Deque<Menu>> stacks = new HashMap<>();
+    private static final Map<UUID, Boolean> navigatingBack = new HashMap<>();
+    private static final Set<UUID> suppressCloseHandling = new HashSet<>();
 
 
     /**
@@ -29,7 +29,7 @@ public class GuiStackManager {
     }
 
     public static void markSuppressClose(Player player) {
-        suppressCloseHandling.add(player);
+        suppressCloseHandling.add(player.getUniqueId());
     }
 
 
@@ -40,9 +40,9 @@ public class GuiStackManager {
      * @param player The player to navigate back for
      */
     public static void navigateBack(Player player) {
-        Deque<Menu> stack = stacks.get(player);
+        Deque<Menu> stack = stacks.get(player.getUniqueId());
         if (stack != null && stack.size() > 1) {
-            navigatingBack.put(player, true);
+            navigatingBack.put(player.getUniqueId(), true);
 
             stack.pop();
             Menu previousMenu = stack.peek();
@@ -66,21 +66,18 @@ public class GuiStackManager {
      * @param menu The menu to add
      */
     private static void push(Player player, Menu menu) {
-        stacks.computeIfAbsent(player, p -> new ArrayDeque<>()).push(menu);
+        stacks.computeIfAbsent(player.getUniqueId(), p -> new ArrayDeque<>()).push(menu);
     }
 
     /**
      * Removes and returns the top menu from the player's stack.
      *
      * @param player The player
-     * @return The top menu, or null if the stack is empty
      */
-    private static Menu pop(Player player) {
-        Deque<Menu> stack = stacks.get(player);
+    private static void pop(Player player) {
+        Deque<Menu> stack = stacks.get(player.getUniqueId());
         if (stack != null && !stack.isEmpty()) {
-            return stack.pop();
-        } else {
-            return null;
+            stack.pop();
         }
     }
 
@@ -91,12 +88,12 @@ public class GuiStackManager {
      * @param player The player who closed the inventory
      */
     public static void handleInventoryClose(Player player) {
-        if (suppressCloseHandling.remove(player)) {
+        if (suppressCloseHandling.remove(player.getUniqueId())) {
             return;
         }
 
-        if (Boolean.TRUE.equals(navigatingBack.get(player))) {
-            navigatingBack.remove(player);
+        if (Boolean.TRUE.equals(navigatingBack.get(player.getUniqueId()))) {
+            navigatingBack.remove(player.getUniqueId());
         } else {
             pop(player);
         }
@@ -110,7 +107,7 @@ public class GuiStackManager {
      * @param player The player whose stack should be cleared
      */
     public static void clearStack(Player player) {
-        stacks.remove(player);
-        navigatingBack.remove(player);
+        stacks.remove(player.getUniqueId());
+        navigatingBack.remove(player.getUniqueId());
     }
 }
