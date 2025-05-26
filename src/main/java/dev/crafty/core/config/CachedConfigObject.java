@@ -180,7 +180,7 @@ public abstract class CachedConfigObject<K, V> {
                         value,
                         new SectionWrapper(section),
                         new YamlConfigurationWrapper(config),
-                        getConfigSection() + "." + keyToString(key),
+                        keyToString(key),
                         fileOpt.get(),
                         true
                 );
@@ -249,7 +249,7 @@ public abstract class CachedConfigObject<K, V> {
         }
 
         if (getSerializer().isPresent()) {
-            return getSerializer().get().deserialize(section, getConfigSection() + "." + keyToString(id));
+            return getSerializer().get().deserialize(section, keyToString(id));
         }
 
         return Optional.empty();

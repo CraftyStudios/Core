@@ -25,7 +25,7 @@ public class Polygon3dSerializer implements ConfigSerializer<Polygon3d> {
         section.set(path + ".minY", minY);
         section.set(path + ".maxY", maxY);
 
-        SectionWrapper verticesSection = section.createSection("vertices");
+        SectionWrapper verticesSection = section.createSection(path + ".vertices");
 
         for (int i = 1; i <= points.size(); i++) {
             Point2d point = points.get(i - 1);
