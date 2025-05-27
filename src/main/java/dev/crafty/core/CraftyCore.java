@@ -3,6 +3,8 @@ package dev.crafty.core;
 import dev.crafty.core.bridge.BridgeManager;
 import dev.crafty.core.bridge.economy.EconomyBridge;
 import dev.crafty.core.bridge.economy.vault.VaultEconomyBridge;
+import dev.crafty.core.bridge.holograms.HologramBridge;
+import dev.crafty.core.bridge.holograms.decentholograms.DecentHologramsBridge;
 import dev.crafty.core.bridge.placeholders.PlaceholderBridge;
 import dev.crafty.core.bridge.placeholders.placeholderapi.PlaceholderApiBridge;
 import dev.crafty.core.bukkit.CraftyLogger;
@@ -292,5 +294,8 @@ public final class CraftyCore extends JavaPlugin {
 
         // Economy
         BridgeManager.registerBridge(EconomyBridge.class, new VaultEconomyBridge());
+
+        // Holograms
+        BridgeManager.registerBridge(HologramBridge.class, new DecentHologramsBridge());
     }
 }

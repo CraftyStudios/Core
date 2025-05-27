@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.crafty.core.CraftyCore;
 import dev.crafty.core.config.serializer.ConfigSerializer;
+import dev.crafty.core.plugin.CraftyPlugin;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -67,6 +69,10 @@ public abstract class CachedConfigObject<K, V> {
      */
     protected abstract String keyToString(K key);
 
+    protected abstract boolean createNewFile();
+
+    protected abstract File folder();
+
     /**
      * Gets a value from the cache, loading from config if not present.
      *
@@ -85,22 +91,52 @@ public abstract class CachedConfigObject<K, V> {
      */
     public void loadAll() {
         cache.invalidateAll();
-        Optional<File> fileOpt = ensureFileExists();
-        if (fileOpt.isEmpty()) {
-            return;
-        }
+        if (!createNewFile()) {
+            Optional<File> fileOpt = ensureFileExists(null);
+            if (fileOpt.isEmpty()) {
+                return;
+            }
 
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(fileOpt.get());
-        ConfigurationSection section = config.getConfigurationSection(getConfigSection());
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(fileOpt.get());
+            ConfigurationSection section = config.getConfigurationSection(getConfigSection());
 
-        if (section == null) {
-            return;
-        }
+            if (section == null) {
+                return;
+            }
 
-        for (String key : section.getKeys(false)) {
-            K typedKey = keyFromString(key);
-            Optional<V> value = getFromConfig(typedKey);
-            value.ifPresent(v -> cache.put(typedKey, v));
+            for (String key : section.getKeys(false)) {
+                K typedKey = keyFromString(key);
+                Optional<V> value = getFromConfig(typedKey);
+                value.ifPresent(v -> cache.put(typedKey, v));
+            }
+        } else {
+            if (folder() != null && !folder().exists()) {
+                folder().mkdirs();
+            }
+
+            File[] files = folder().listFiles((dir, name) -> name.endsWith(".yml"));
+
+            if (files == null) {
+                CraftyCore.INSTANCE.logger.error("Failed to list files in folder: " + folder().getAbsolutePath());
+                return;
+            }
+
+            for (File file : files) {
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                ConfigurationSection section = config.getConfigurationSection(getConfigSection());
+
+                if (section == null) {
+                    continue;
+                }
+
+                Set<String> keys = section.getKeys(false);
+                if (!keys.isEmpty()) {
+                    String key = keys.iterator().next();
+                    K typedKey = keyFromString(key);
+                    Optional<V> value = getFromConfig(typedKey);
+                    value.ifPresent(v -> cache.put(typedKey, v));
+                }
+            }
         }
     }
 
@@ -120,7 +156,7 @@ public abstract class CachedConfigObject<K, V> {
      */
     public void remove(K key) {
         cache.invalidate(key);
-        Optional<File> fileOpt = ensureFileExists();
+        Optional<File> fileOpt = ensureFileExists(key);
         if (fileOpt.isEmpty()) {
             return;
         }
@@ -162,7 +198,7 @@ public abstract class CachedConfigObject<K, V> {
      */
     private void saveToConfig(K key, V value) {
         synchronized (configFileLock) {
-            Optional<File> fileOpt = ensureFileExists();
+            Optional<File> fileOpt = ensureFileExists(key);
             if (fileOpt.isEmpty()) {
                 return;
             }
@@ -201,10 +237,24 @@ public abstract class CachedConfigObject<K, V> {
      *
      * @return an optional containing the file if it exists or was created successfully
      */
-    private Optional<File> ensureFileExists() {
+    private Optional<File> ensureFileExists(K id) {
         if (!getConfigFile().exists()) {
             try {
-                getConfigFile().createNewFile();
+                if (createNewFile()) {
+                    if (folder() != null && !folder().exists()) {
+                        folder().mkdirs();
+                    }
+
+                    File configFile = new File(folder(), id + ".yml");
+
+                    if (!configFile.exists()) {
+                        configFile.createNewFile();
+                    }
+
+                    return Optional.of(configFile);
+                } else {
+                    getConfigFile().createNewFile();
+                }
             } catch (IOException e) {
                 CraftyCore.INSTANCE.logger.error("Failed to create config file", e);
                 return Optional.empty();
@@ -220,7 +270,7 @@ public abstract class CachedConfigObject<K, V> {
      * @return an optional containing the value if present
      */
     private Optional<V> getFromConfig(K id) {
-        Optional<File> fileOpt = ensureFileExists();
+        Optional<File> fileOpt = ensureFileExists(id);
         if (fileOpt.isEmpty()) {
             return Optional.empty();
         }
@@ -269,6 +319,8 @@ public abstract class CachedConfigObject<K, V> {
         private String configSection = "";
         private Function<String, K> keyFromStringFunction;
         private Function<K, String> keyToStringFunction;
+        private boolean createNewFile = false;
+        private File folder;
 
         /**
          * Sets the config file to use.
@@ -326,6 +378,29 @@ public abstract class CachedConfigObject<K, V> {
         }
 
         /**
+         * Sets whether to create a new file instead of appending to an existing one.
+         *
+         * @param createNewFile true to create a new file, false otherwise
+         * @return this builder
+         */
+        public Builder<K, V> createNewFile(boolean createNewFile) {
+            this.createNewFile = createNewFile;
+            return this;
+        }
+
+
+        /**
+         * Sets the folder name where the files will be stored
+         *
+         * @param folder the folder
+         * @return this builder
+         */
+        public Builder<K, V> folder(File folder) {
+            this.folder = folder;
+            return this;
+        }
+
+        /**
          * Builds a new {@link CachedConfigObject} instance with the configured parameters.
          *
          * @return a new CachedConfigObject instance
@@ -336,6 +411,8 @@ public abstract class CachedConfigObject<K, V> {
             final String section = this.configSection;
             final Function<String, K> keyFromString = this.keyFromStringFunction;
             final Function<K, String> keyToString = this.keyToStringFunction;
+            final boolean createNewFile = this.createNewFile;
+            final File folder = this.folder;
 
             return new CachedConfigObject<>() {
                 @Override
@@ -361,6 +438,16 @@ public abstract class CachedConfigObject<K, V> {
                 @Override
                 protected String keyToString(K key) {
                     return keyToString.apply(key);
+                }
+
+                @Override
+                protected boolean createNewFile() {
+                    return createNewFile;
+                }
+
+                @Override
+                protected File folder() {
+                    return folder;
                 }
             };
         }

@@ -77,22 +77,6 @@ public abstract class CraftyPlugin extends JavaPlugin {
             return;
         }
 
-        // Hologram support
-        if (hologramSupport()) {
-            logger.info("Setting up hologram support...");
-            if (isPluginInstalled("ProtocolLib")) {
-                HoloEasy.bind(this, PacketImpl.ProtocolLib);
-                logger.info("Bound hologram support via ProtocolLib.");
-            } else if (isPluginInstalled("PacketEvents")) {
-                HoloEasy.bind(this, PacketImpl.PacketEvents);
-                logger.info("Bound hologram support via PacketEvents.");
-            } else {
-                logger.error("Hologram support requires either ProtocolLib or PacketEvents to be installed.");
-                getServer().getPluginManager().disablePlugin(this);
-                return;
-            }
-        }
-
         logger.info("Scanning and loading configs...");
         craftyCore.scanAndLoadConfigs(this);
 
@@ -148,7 +132,6 @@ public abstract class CraftyPlugin extends JavaPlugin {
     protected abstract void onCraftyDisable();
     protected abstract void onConfigReloaded();
     protected abstract String minimumCoreVersion();
-    protected abstract boolean hologramSupport();
     protected abstract String getPackage();
     protected List<String> getRequiredPlugins() { return List.of(); }
     protected List<ScheduledAction> getScheduledActions() { return List.of(); }

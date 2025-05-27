@@ -8,6 +8,7 @@ import dev.crafty.core.items.serializers.ItemActionSerializer;
 import dev.crafty.core.items.serializers.ItemCraftingRecipeSerializer;
 import dev.crafty.core.plugin.CraftyPlugin;
 import dev.crafty.core.util.Lang;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -32,6 +33,7 @@ import java.util.function.BiConsumer;
  *
  * @since 1.0.26
  */
+@Getter
 public abstract class Item implements Listener {
     private static final String ITEM_FOLDER = "items/";
     public static final NamespacedKey ITEM_KEY = new NamespacedKey("CraftyCore", "item_id");
